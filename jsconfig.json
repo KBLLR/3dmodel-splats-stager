@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@core/*": ["src/core/*"],
+      "@components/*": ["src/core/components/*"],
+      "@managers/*": ["src/core/managers/*"],
+      "@generators/*": ["src/core/generators/*"],
+      "@scenes/*": ["src/core/scenes/*"],
+      "@utils/*": ["src/core/utils/*"],
+      "@encoders/*": ["src/core/components/encoders/*"],
+      "@environments/*": ["src/core/components/environments/*"],
+      "@geometries/*": ["src/core/components/geometries/*"],
+      "@lights/*": ["src/core/components/lights/*"],
+      "@loaders/*": ["src/core/components/loaders/*"],
+      "@materials/*": ["src/core/components/materials/*"],
+      "@assets/*": ["src/assets/*"],
+      "@models/*": ["src/assets/models/*"],
+      "@textures/*": ["src/assets/textures/*"],
+      "@hdri/*": ["src/assets/hdri/*"],
+      "@effects/*": ["src/effects/*"],
+      "@monitoring/*": ["src/monitoring/*"],
+      "@postprocessing/*": ["src/postprocessing/*"],
+      "@shaders/*": ["src/shaders/*"],
+      "@controls/*": ["src/controls/*"],
+      "@config/*": ["src/config/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

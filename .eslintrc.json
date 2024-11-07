@@ -1,0 +1,23 @@
+{
+  "env": {
+    "browser": true,
+    "es2024": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2024,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": ["error", { "allow": ["warn", "error", "info", "group", "groupEnd"] }]
+  },
+  "overrides": [
+    {
+      "files": ["src/tests/**/*.js"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

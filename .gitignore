@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production
+dist
+dist-ssr
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Large binary files
+*.glb
+*.gltf
+*.bin
+*.hdr
+*.exr
+*.png
+*.jpg
+*.jpeg
+*.mp3
+*.wav
+*.mp4
+*.webm
+
+# Asset directories
+src/assets/models/glb/*
+src/assets/hdri/*
+src/assets/textures/*
+src/assets/panoramas/*
+src/assets/environmentMaps/hdr/*
+src/assets/environmentMaps/exr/*
+src/assets/audio/*
+
+# Keep README files
+!src/assets/**/README.md
