@@ -10,7 +10,6 @@
     "lint": "eslint . --ext .js --fix",
     "format": "prettier --write .",
     "clean": "rimraf dist",
-    "prepare": "husky install",
     "test:scene": "vite src/tests",
     "test": "npm run test:scene"
   },

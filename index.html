@@ -3,10 +3,146 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A Three.js-based viewer for Gaussian Splatting models with advanced staging capabilities"
+    />
+    <!-- <meta name="theme-color" content="#000000" /> -->
+    <!-- iOS Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Splats Stager" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-domain.com" />
+    <meta property="og:title" content="3D Model Splats Stager" />
+    <meta
+      property="og:description"
+      content="Advanced 3D model visualization with Gaussian Splatting"
+    />
+    <meta property="og:image" content="https://your-domain.com/preview.jpg" />
+    <!-- iOS Icons -->
+
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/icons/apple-touch-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/icons/apple-touch-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="167x167"
+      href="/icons/apple-touch-icon-167x167.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/apple-touch-icon-180x180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/apple-touch-icon-192x192.png"
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-60x60.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/icons/apple-touch-icon-76x76.png"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
     <title>3D Model Splats Stager</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <div id="container"></div>
-    <script type="module" src="/main.js"></script>
+    <canvas id="webgl" class="webgl"></canvas>
+    <div class="ui-container">
+      <!-- Top Left Banner -->
+      <div class="banner-top-left">
+        <div class="rectangle" style="width: 250px; height: 1px; top: 0"></div>
+        <div
+          class="rectangle"
+          style="width: 1px; height: 265px; right: 0"
+        ></div>
+        <div
+          class="rectangle"
+          style="width: 250px; height: 1px; bottom: 0"
+        ></div>
+        <div class="rectangle" style="width: 1px; height: 265px; left: 0"></div>
+        <div
+          class="rectangle"
+          style="width: 1px; height: 88px; left: 229px"
+        ></div>
+        <div
+          class="rectangle"
+          style="width: 250px; height: 1px; top: 87px"
+        ></div>
+        <div class="month">Nov</div>
+        <div class="year">2024</div>
+        <div class="intro">
+          This Text will be auto-generated based on the Stage resulting of our
+          generator. AI will come after to assist
+        </div>
+      </div>
+
+      <!-- Navbar -->
+      <!-- <div class="navbar">
+        <div class="rectangle" style="width: 100%; height: 1px; top: 0"></div>
+        <div class="rectangle" style="width: 1px; height: 55px; right: 0"></div>
+        <div
+          class="rectangle"
+          style="width: 100%; height: 1px; bottom: 0"
+        ></div>
+        <div
+          class="rectangle"
+          style="width: 1px; height: 55px; left: 363px"
+        ></div>
+        <div
+          class="rectangle"
+          style="width: 1px; height: 55px; right: 70px"
+        ></div>
+        <div class="rectangle" style="width: 1px; height: 55px; left: 0"></div>
+        <div class="menu-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="title">International days</div>
+        <div class="subtitle">Happy New Year</div>
+      </div> -->
+
+      <!-- Bottom Center Banner -->
+      <div class="banner-bottom-center">
+        <div class="title-banner-bottom">Innovate –</div>
+        <div class="subtitle-banner-bottom">with a human touch.</div>
+        <div class="text-banner-bottom">
+          This Text will be auto-generated based on the Stage resulting of our
+          generator. AI will come after to assist.
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
   </body>
 </html>

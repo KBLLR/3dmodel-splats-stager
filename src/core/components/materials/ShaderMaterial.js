@@ -47,7 +47,7 @@ export class ShaderMaterial extends THREE.ShaderMaterial {
         });
 
         // Handle shader code updates
-        if (this.debugObject.vertexShader !== this.vertexShader || 
+        if (this.debugObject.vertexShader !== this.vertexShader ||
             this.debugObject.fragmentShader !== this.fragmentShader) {
             this.vertexShader = this.debugObject.vertexShader;
             this.fragmentShader = this.debugObject.fragmentShader;
