@@ -55,10 +55,10 @@ export default defineConfig({
       overlay: false, // Disable error overlay if needed
       port: 3000,
     },
-    build: {
-      outDir: "dist",
-      assetsDir: "assets",
-      sourcemap: true,
-    },
+  },
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+    sourcemap: true,
   },
 });
