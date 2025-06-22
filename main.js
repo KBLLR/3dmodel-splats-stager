@@ -195,7 +195,7 @@ scene.add(ground);
 
 // Environment
 const environment = new HDRIEnvironment({
-  path: "/src/assets/environmentMaps/hdr/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+  path: "/src/assets/environmentMaps/hdr/placeholder.hdr",
   intensity: 1.0,
 });
 environment.load(renderer).then((envMap) => {
