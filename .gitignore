@@ -35,6 +35,8 @@ lerna-debug.log*
 *.hdr
 *.exr
 *.png
+!public/icons/icon-192x192.png
+!public/icons/icon-512x512.png
 *.jpg
 *.jpeg
 *.mp3
