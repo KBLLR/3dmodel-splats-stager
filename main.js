@@ -7,11 +7,7 @@ import { CinematicCamera } from "@cameras/CinematicCamera";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { HDRIEnvironment } from "@components/environments/HDRIEnvironment";
 import { FOG_PRESETS } from "@presets/fogPresets"; // Ensure path is correct
-import {
-  CAMERA_PRESETS,
-  CAMERA_MOVEMENT_PRESETS,
-  CAMERA_COMPATIBILITY,
-} from "@presets/cameraPresets"; // Adjust the path if necessary
+import { CAMERA_MOVEMENT_PRESETS } from "@presets/cameraPresets"; // Adjust the path if necessary
 
 // Initialize Tweakpane
 const pane = new Pane();
@@ -156,7 +152,7 @@ movementFolder.addBinding(movementParams, "stabilization", {
 // Initialize Scene and Renderer
 const scene = new THREE.Scene();
 const canvas = document.querySelector("#webgl");
-const renderer = new THREE.WebGLRenderer({
+const renderer = new CinematicRenderer({
   canvas,
   antialias: true,
   alpha: true,
@@ -171,13 +167,13 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000,
-);
-camera.position.set(0, 2, 5);
+const camera = new CinematicCamera({
+  fov: 75,
+  aspect: window.innerWidth / window.innerHeight,
+  near: 0.1,
+  far: 1000,
+  position: { x: 0, y: 2, z: 5 },
+});
 scene.add(camera);
 
 // Orbit Controls

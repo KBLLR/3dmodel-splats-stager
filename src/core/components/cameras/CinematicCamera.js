@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { CinematicCamera as ThreeCinematicCamera } from 'three/examples/jsm/cameras/CinematicCamera';
 
 export class CinematicCamera extends ThreeCinematicCamera {

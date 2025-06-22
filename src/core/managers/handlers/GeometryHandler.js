@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { Box, Sphere, Plane, Circle, Cylinder } from "@geometries";
 
 export class GeometryHandler {

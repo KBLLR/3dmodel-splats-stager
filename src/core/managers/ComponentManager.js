@@ -105,8 +105,8 @@ export class ComponentManager {
         const debugData = this.debugObjects[type][name];
         if (!debugData) return;
 
-        switch(type) {
-            case 'materials':
+        switch (type) {
+            case 'materials': {
                 const material = this.getMaterial(name);
                 if (material) {
                     material.color?.setHex(debugData.color);
@@ -114,13 +114,15 @@ export class ComponentManager {
                     material.needsUpdate = true;
                 }
                 break;
-            case 'lights':
+            }
+            case 'lights': {
                 const light = this.getLight(name);
                 if (light) {
                     light.intensity = debugData.intensity;
                     light.color?.setHex(debugData.color);
                 }
                 break;
+            }
             // Add other component type updates as needed
         }
     }

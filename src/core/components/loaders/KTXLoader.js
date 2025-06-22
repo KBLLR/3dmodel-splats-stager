@@ -1,5 +1,4 @@
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
-import * as THREE from 'three';
 
 export class CustomKTXLoader {
     constructor(renderer) {

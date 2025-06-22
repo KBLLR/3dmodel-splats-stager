@@ -1,6 +1,5 @@
 import { SCENE_REQUIREMENTS } from "../core/presets/sceneRequirements";
 import { SCENE_CONFIGS } from "../core/presets/sceneConfigs";
-import { CinematicCamera } from "../core/components/cameras/CinematicCamera";
 import * as THREE from "three";
 
 class SceneTest {
@@ -59,7 +58,7 @@ class SceneTest {
               expected: requirements.camera,
               received: config.camera,
               failedChecks: Object.entries(cameraChecks)
-                .filter(([_, passed]) => !passed)
+                .filter(([, passed]) => !passed)
                 .map(([key]) => key),
             }
           : null,
