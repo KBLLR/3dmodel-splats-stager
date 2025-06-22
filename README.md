@@ -28,3 +28,6 @@ A modern, high-performance 3D object stager specializing in Gaussian Splatting m
 - Environment variable handling
 - ESLint and Prettier configuration
 - Type support for Three.js
+
+## Asset Structure
+HDR environment maps should be stored in `src/assets/environmentMaps/hdr/`. The example scene loads `placeholder.hdr` from this directory. Update `main.js` if you use a different file name.
