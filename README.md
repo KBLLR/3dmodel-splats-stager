@@ -28,3 +28,17 @@ A modern, high-performance 3D object stager specializing in Gaussian Splatting m
 - Environment variable handling
 - ESLint and Prettier configuration
 - Type support for Three.js
+
+## Troubleshooting
+
+### Rollup native module error
+
+If you see an error such as `Cannot find module '@rollup/rollup-linux-x64-gnu'`,
+remove your current dependencies and lock file, then reinstall:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+This project has been built successfully using **Node.js v20.19.2**.
