@@ -1,5 +1,5 @@
 import { CinematicCamera } from '../components/cameras/CinematicCamera';
-import { OrbitControls } from '../components/cameras/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export class CameraManager {
     constructor(renderer, container) {
