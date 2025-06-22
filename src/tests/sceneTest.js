@@ -1,5 +1,5 @@
-import { SCENE_REQUIREMENTS } from "../core/presets/sceneRequirements";
-import { SCENE_CONFIGS } from "../core/presets/sceneConfigs";
+import { SCENE_REQUIREMENTS } from "../presets/sceneRequirements";
+import { SCENE_CONFIGS } from "../presets/sceneConfigs";
 import * as THREE from "three";
 
 class SceneTest {
