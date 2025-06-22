@@ -40,7 +40,7 @@ export class HDRIEnvironment {
     }
   }
 
-  updateFromDebug(renderer) {
+  updateFromDebug() {
     if (this.envMap) {
       this.envMap.intensity = this.debugObject.intensity;
       this.envMap.blur = this.debugObject.blur;

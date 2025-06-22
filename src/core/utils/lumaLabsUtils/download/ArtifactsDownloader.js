@@ -27,7 +27,6 @@ export class ArtifactsDownloader {
             this.requiredArtifacts.map(async key => {
                 const url = artifacts[key];
                 if (!url) {
-                    console.log('missing', key);
                     return null;
                 }
 

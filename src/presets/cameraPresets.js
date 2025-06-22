@@ -139,7 +139,9 @@ export const CAMERA_MOVEMENT_PRESETS = {
 // Validation rules
 export const validateCameraPreset = (preset) => {
   const required = ["focalLength", "fstop", "focusDistance"];
-  const valid = required.every((prop) => preset.hasOwnProperty(prop));
+  const valid = required.every((prop) =>
+    Object.prototype.hasOwnProperty.call(preset, prop),
+  );
   if (!valid) {
     throw new Error("Invalid camera preset: missing required properties");
   }

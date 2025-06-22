@@ -1,7 +1,7 @@
 import { LumaSplatsThree } from '@lumaai/luma-web';
 
 export class LumaLabsLoader {
-    constructor(params = {}) {
+    constructor() {
         this.type = 'splat';
         this.isCustomLoader = true;
         this.cache = new Map();

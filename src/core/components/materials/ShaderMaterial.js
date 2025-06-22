@@ -64,19 +64,19 @@ export class ShaderMaterial extends THREE.ShaderMaterial {
     }
 }
 
-const DEFAULT_VERTEX_SHADER = \`
+const DEFAULT_VERTEX_SHADER = `
 varying vec2 vUv;
 
 void main() {
     vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
-\`;
+`;
 
-const DEFAULT_FRAGMENT_SHADER = \`
+const DEFAULT_FRAGMENT_SHADER = `
 varying vec2 vUv;
 
 void main() {
     gl_FragColor = vec4(vUv.x, vUv.y, 1.0, 1.0);
 }
-\`;
+`;
