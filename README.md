@@ -29,16 +29,17 @@ A modern, high-performance 3D object stager specializing in Gaussian Splatting m
 - ESLint and Prettier configuration
 - Type support for Three.js
 
+## Asset Structure
+
+HDR environment maps should be stored in `src/assets/environmentMaps/hdr/`.  
+The example scene loads `placeholder.hdr` from this directory.  
+Update `main.js` if you use a different file name.
+
 ## Troubleshooting
 
 ### Rollup native module error
 
-If you see an error such as `Cannot find module '@rollup/rollup-linux-x64-gnu'`,
-remove your current dependencies and lock file, then reinstall:
+If you see an error such as:
 
 ```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-This project has been built successfully using **Node.js v20.19.2**.
+Cannot find module '@rollup/rollup-linux-x64-gnu'
