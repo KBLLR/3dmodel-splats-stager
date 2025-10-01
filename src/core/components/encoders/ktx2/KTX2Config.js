@@ -1,3 +1,13 @@
+/**
+ * @file This file contains the configuration for the KTX2 texture encoder.
+ * It includes default settings, quality presets, and a validation function.
+ * @module KTX2Config
+ */
+
+/**
+ * @description Configuration object for the KTX2 texture encoder.
+ * Contains default settings, quality presets, and a validation function.
+ */
 export const KTX2Config = {
     defaults: {
         transcoderPath: '/ktx2/',
@@ -45,6 +55,17 @@ export const KTX2Config = {
         }
     },
 
+    /**
+     * Validates the given KTX2 configuration, ensuring quality, method, and levels are valid.
+     *
+     * @param {object} config - The configuration object to validate.
+     * @param {string} config.quality - The quality preset to validate.
+     * @param {object} config.compression - The compression settings.
+     * @param {string} config.compression.method - The compression method to validate.
+     * @param {string} config.compression.level - The compression level to validate.
+     * @param {number} config.compression.rdoLevel - The RDO level to validate.
+     * @returns {object} A new object with the validated properties.
+     */
     validate(config) {
         const validQualities = ['low', 'medium', 'high'];
         const validMethods = ['auto', 'etc1s', 'uastc'];

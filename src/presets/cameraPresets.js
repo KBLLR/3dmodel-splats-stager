@@ -1,3 +1,12 @@
+/**
+ * @file This file contains presets for camera settings, movements, validation rules, and compatibility checks.
+ * @module cameraPresets
+ */
+
+/**
+ * @description A collection of camera presets defining properties like focal length, f-stop, and effects.
+ * @type {Object.<string, object>}
+ */
 export const CAMERA_PRESETS = {
   DEFAULT: {
     name: "Default",
@@ -97,6 +106,10 @@ export const CAMERA_PRESETS = {
   },
 };
 
+/**
+ * @description A collection of camera movement presets defining properties like shake, path, and speed.
+ * @type {Object.<string, object>}
+ */
 export const CAMERA_MOVEMENT_PRESETS = {
   STATIC: {
     name: "Static",
@@ -136,7 +149,12 @@ export const CAMERA_MOVEMENT_PRESETS = {
   },
 };
 
-// Validation rules
+/**
+ * @description Validates a camera preset to ensure it has the required properties.
+ * @param {object} preset - The camera preset object to validate.
+ * @returns {boolean} True if the preset is valid.
+ * @throws {Error} If the preset is missing required properties.
+ */
 export const validateCameraPreset = (preset) => {
   const required = ["focalLength", "fstop", "focusDistance"];
   const valid = required.every((prop) =>
@@ -148,7 +166,10 @@ export const validateCameraPreset = (preset) => {
   return true;
 };
 
-// Compatibility rules
+/**
+ * @description Defines compatibility rules for camera presets based on scene type and environment.
+ * @type {Object.<string, Object.<string, string[]>>}
+ */
 export const CAMERA_COMPATIBILITY = {
   SCENE_TYPE: {
     normal: ["DEFAULT", "WIDE_SHOT", "CLOSE_UP", "PORTRAIT"],

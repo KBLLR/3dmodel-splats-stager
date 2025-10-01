@@ -1,9 +1,25 @@
+/**
+ * @file Manages the 3D environment, including loading and applying environment maps and lights.
+ * @module EnvironmentManager
+ */
+
 import * as THREE from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { PMREMGenerator } from 'three';
 
+/**
+ * @class EnvironmentManager
+ * @description Handles loading different environment map formats (HDR, EXR, LDR) and manages associated lights.
+ */
 export class EnvironmentManager {
+    /**
+     * @constructor
+     * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+     * @param {THREE.Scene} scene - The scene to which the environment will be applied.
+     * @param {object} [config={}] - Optional configuration.
+     * @param {string} [config.initialPath] - Path to an initial environment map to load.
+     */
     constructor(renderer, scene, config = {}) {
         this.renderer = renderer;
         this.scene = scene;
@@ -41,6 +57,13 @@ export class EnvironmentManager {
         }
     }
     
+    /**
+     * @method setEnvironmentMapPath
+     * @description Loads an environment map from a given path, automatically detecting the format.
+     * @param {string} path - The path to the environment map file.
+     * @param {object} [options={}] - Optional parameters to apply to the environment.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
+     */
     async setEnvironmentMapPath(path, options = {}) {
         const extension = path.split('.').pop().toLowerCase();
         
@@ -70,6 +93,12 @@ export class EnvironmentManager {
         }
     }
 
+    /**
+     * @method loadHDR
+     * @description Loads and processes an HDR (.hdr) file.
+     * @param {string} path - The path to the HDR file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the processed texture.
+     */
     async loadHDR(path) {
         return new Promise((resolve, reject) => {
             new RGBELoader()
@@ -82,6 +111,12 @@ export class EnvironmentManager {
         });
     }
 
+    /**
+     * @method loadEXR
+     * @description Loads and processes an EXR (.exr) file.
+     * @param {string} path - The path to the EXR file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the processed texture.
+     */
     async loadEXR(path) {
         return new Promise((resolve, reject) => {
             new EXRLoader()
@@ -94,6 +129,12 @@ export class EnvironmentManager {
         });
     }
 
+    /**
+     * @method loadLDR
+     * @description Loads a Low Dynamic Range (LDR) image file (e.g., PNG, JPG).
+     * @param {string} path - The path to the image file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
+     */
     async loadLDR(path) {
         return new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(path, 
@@ -112,6 +153,12 @@ export class EnvironmentManager {
         });
     }
     
+    /**
+     * @method setEnvironmentMap
+     * @description Applies a loaded texture as the scene's environment and background.
+     * @param {THREE.Texture} texture - The texture to apply.
+     * @param {object} [options={}] - Optional parameters to apply.
+     */
     setEnvironmentMap(texture, options = {}) {
         if (this.currentEnvironment) {
             this.currentEnvironment.dispose();
@@ -132,6 +179,10 @@ export class EnvironmentManager {
         Object.assign(this.debugObject, options);
     }
 
+    /**
+     * @method updateFromDebug
+     * @description Updates the environment and light properties from the `debugObject`.
+     */
     updateFromDebug() {
         if (this.currentEnvironment) {
             this.currentEnvironment.intensity = this.debugObject.intensity;
@@ -143,6 +194,10 @@ export class EnvironmentManager {
         this.environmentAmbient.intensity = this.debugObject.ambientIntensity;
     }
 
+    /**
+     * @method dispose
+     * @description Disposes of the current environment map and the PMREMGenerator.
+     */
     dispose() {
         if (this.currentEnvironment) {
             this.currentEnvironment.dispose();

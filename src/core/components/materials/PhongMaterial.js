@@ -1,6 +1,40 @@
+/**
+ * @file Extends the Three.js MeshPhongMaterial with a debug-friendly interface.
+ * @module PhongMaterial
+ */
+
 import * as THREE from "three";
 
+/**
+ * @class PhongMaterial
+ * @description A custom material that extends Three.js's MeshPhongMaterial to provide
+ * a simplified constructor and a debug object for easy manipulation.
+ * @extends {THREE.MeshPhongMaterial}
+ */
 export class PhongMaterial extends THREE.MeshPhongMaterial {
+  /**
+   * @constructor
+   * @param {object} [params={}] - The parameters for the material.
+   * @param {THREE.Color|number|string} [params.color=0xffffff] - The color of the material.
+   * @param {THREE.Color|number|string} [params.emissive=0x000000] - The emissive color of the material.
+   * @param {THREE.Color|number|string} [params.specular=0x111111] - The specular color of the material.
+   * @param {number} [params.shininess=30] - The shininess of the specular highlight.
+   * @param {THREE.Texture|null} [params.map=null] - The color map.
+   * @param {THREE.Texture|null} [params.bumpMap=null] - The bump map.
+   * @param {number} [params.bumpScale=1] - The scale of the bump map.
+   * @param {THREE.Texture|null} [params.normalMap=null] - The normal map.
+   * @param {THREE.Vector2} [params.normalScale=new THREE.Vector2(1, 1)] - The scale of the normal map.
+   * @param {THREE.Texture|null} [params.displacementMap=null] - The displacement map.
+   * @param {number} [params.displacementScale=1] - The scale of the displacement map.
+   * @param {number} [params.displacementBias=0] - The bias of the displacement map.
+   * @param {THREE.Texture|null} [params.envMap=null] - The environment map.
+   * @param {THREE.Combine} [params.combine=THREE.MultiplyOperation] - How the environment map is combined with the surface color.
+   * @param {number} [params.reflectivity=1] - The reflectivity of the environment map.
+   * @param {number} [params.refractionRatio=0.98] - The ratio of refraction.
+   * @param {boolean} [params.wireframe=false] - Whether to render as a wireframe.
+   * @param {boolean} [params.transparent=false] - Whether the material is transparent.
+   * @param {number} [params.opacity=1] - The opacity of the material.
+   */
   constructor(params = {}) {
     const {
       color = 0xffffff,
@@ -49,6 +83,9 @@ export class PhongMaterial extends THREE.MeshPhongMaterial {
     this.type = "phong";
     this.isCustomMaterial = true;
 
+    /**
+     * @property {object} debugObject - An object holding the material's parameters for debugging.
+     */
     this.debugObject = {
       color,
       emissive,
@@ -65,6 +102,10 @@ export class PhongMaterial extends THREE.MeshPhongMaterial {
     };
   }
 
+  /**
+   * @method updateFromDebug
+   * @description Updates the material's properties from the `debugObject`.
+   */
   updateFromDebug() {
     Object.entries(this.debugObject).forEach(([key, value]) => {
       if (this[key] !== undefined) {

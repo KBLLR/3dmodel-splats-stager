@@ -1,6 +1,26 @@
+/**
+ * @file A configurable WebGLRenderer with extensive debug capabilities.
+ * @module Renderer
+ */
+
 import * as THREE from 'three';
 
+/**
+ * @class Renderer
+ * @description A custom renderer that extends Three.js's WebGLRenderer to provide a comprehensive
+ * set of pre-configured settings and a debug object for real-time manipulation.
+ * @extends {THREE.WebGLRenderer}
+ */
 export class Renderer extends THREE.WebGLRenderer {
+    /**
+     * @constructor
+     * @param {object} [params={}] - The parameters for the renderer.
+     * @param {HTMLCanvasElement} params.canvas - The canvas element to render to.
+     * @param {boolean} [params.antialias=true] - Whether to perform antialiasing.
+     * @param {boolean} [params.alpha=true] - Whether the canvas contains an alpha (transparency) buffer.
+     * @param {string} [params.powerPreference='high-performance'] - A hint to the user agent.
+     * @param {boolean} [params.stencil=false] - Whether the drawing buffer has a stencil buffer.
+     */
     constructor(params = {}) {
         const {
             canvas,
@@ -36,7 +56,9 @@ export class Renderer extends THREE.WebGLRenderer {
         this.shadowMap.enabled = true;
         this.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        // Debug parameters
+        /**
+         * @property {object} debugObject - An object holding renderer parameters for debugging.
+         */
         this.debugObject = {
             clearColor: '#000000',
             clearAlpha: 0,
@@ -50,8 +72,11 @@ export class Renderer extends THREE.WebGLRenderer {
         };
     }
 
+    /**
+     * @method updateFromDebug
+     * @description Updates the renderer's properties from the `debugObject`.
+     */
     updateFromDebug() {
-        // Update renderer settings based on debug parameters
         const toneMappingTypes = {
             'None': THREE.NoToneMapping,
             'Linear': THREE.LinearToneMapping,
@@ -73,7 +98,6 @@ export class Renderer extends THREE.WebGLRenderer {
             'VSM': THREE.VSMShadowMap
         };
 
-        // Apply updates
         this.setClearColor(this.debugObject.clearColor, this.debugObject.clearAlpha);
         this.toneMapping = toneMappingTypes[this.debugObject.toneMapping];
         this.toneMappingExposure = this.debugObject.toneMappingExposure;
@@ -82,7 +106,6 @@ export class Renderer extends THREE.WebGLRenderer {
         this.shadowMap.needsUpdate = true;
         this.physicallyCorrectLights = this.debugObject.physicallyCorrectLights;
         
-        // Handle antialias and pixel ratio carefully as they require renderer recreation
         if (this.debugObject.antialias !== this.antialias) {
             console.warn('Antialiasing change requires renderer recreation');
         }
@@ -90,6 +113,12 @@ export class Renderer extends THREE.WebGLRenderer {
         this.setPixelRatio(Math.min(this.debugObject.pixelRatio, 2));
     }
 
+    /**
+     * @method resize
+     * @description Resizes the renderer and updates the pixel ratio.
+     * @param {number} width - The new width.
+     * @param {number} height - The new height.
+     */
     resize(width, height) {
         this.setSize(width, height);
         this.setPixelRatio(Math.min(window.devicePixelRatio, 2));

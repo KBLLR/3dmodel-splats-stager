@@ -1,5 +1,21 @@
+/**
+ * @file Defines the ArtifactsDownloader class for downloading Luma Labs AI artifacts.
+ * @module ArtifactsDownloader
+ */
+
+/**
+ * @class ArtifactsDownloader
+ * @description Handles the downloading of artifacts from a Luma Labs AI splat loader.
+ */
 export class ArtifactsDownloader {
+    /**
+     * @constructor
+     * @description Initializes the ArtifactsDownloader with a list of required artifact keys.
+     */
     constructor() {
+        /**
+         * @property {string[]} requiredArtifacts - A list of artifact keys to be downloaded.
+         */
         this.requiredArtifacts = [
             'gs_web_meta',
             'gs_web_gauss1',
@@ -13,6 +29,13 @@ export class ArtifactsDownloader {
         ];
     }
 
+    /**
+     * @method downloadArtifacts
+     * @description Asynchronously downloads the required artifacts from the splat loader.
+     * @param {object} splatLoader - The Luma Labs AI splat loader instance.
+     * @param {function} [onProgress=() => {}] - A callback function to report download progress.
+     * @returns {Promise<void>} A promise that resolves when the download process is complete.
+     */
     async downloadArtifacts(splatLoader, onProgress = () => {}) {
         const artifacts = await splatLoader.getArtifacts();
         
@@ -53,6 +76,11 @@ export class ArtifactsDownloader {
         onProgress(1);
     }
 
+    /**
+     * @method triggerDownloads
+     * @description Triggers the download of files by creating and clicking anchor links.
+     * @param {Array<object>} files - An array of file objects, each with a filename and blob.
+     */
     triggerDownloads(files) {
         files.forEach(file => {
             const { filename, blob } = file;
@@ -65,6 +93,12 @@ export class ArtifactsDownloader {
         });
     }
 
+    /**
+     * @method createDownloadButton
+     * @description Creates a button that, when clicked, initiates the artifact download process.
+     * @param {object} splatLoader - The Luma Labs AI splat loader instance.
+     * @returns {HTMLButtonElement} The created download button.
+     */
     createDownloadButton(splatLoader) {
         const button = document.createElement('button');
         button.innerText = 'Download Artifacts';

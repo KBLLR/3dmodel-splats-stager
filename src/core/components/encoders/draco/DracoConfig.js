@@ -1,3 +1,13 @@
+/**
+ * @file This file contains the configuration for the Draco mesh compression encoder.
+ * It includes default settings, quality presets, and a validation function.
+ * @module DracoConfig
+ */
+
+/**
+ * @description Configuration object for the Draco mesh compression encoder.
+ * Contains default settings, quality presets, and a validation function.
+ */
 export const DracoConfig = {
     defaults: {
         decoderPath: '/draco/',
@@ -60,6 +70,19 @@ export const DracoConfig = {
         }
     },
 
+    /**
+     * Validates the given Draco configuration, ensuring quantization and compression levels are within valid ranges.
+     *
+     * @param {object} config - The configuration object to validate.
+     * @param {object} config.quantization - The quantization settings.
+     * @param {number} config.quantization.position - Position quantization.
+     * @param {number} config.quantization.normal - Normal quantization.
+     * @param {number} config.quantization.color - Color quantization.
+     * @param {number} config.quantization.uv - UV quantization.
+     * @param {object} config.compression - The compression settings.
+     * @param {number} config.compression.level - The compression level.
+     * @returns {object} A new object with the validated properties.
+     */
     validate(config) {
         const clampQuantization = (value) => Math.max(1, Math.min(16, value));
         const clampCompression = (value) => Math.max(0, Math.min(10, value));

@@ -1,3 +1,13 @@
+/**
+ * @file This file defines the requirements and compatibility rules for different scene types.
+ * @module sceneRequirements
+ */
+
+/**
+ * @description An object defining the required components and their properties for different scene types.
+ * This is used to validate scene configurations.
+ * @type {Object.<string, object>}
+ */
 export const SCENE_REQUIREMENTS = {
   NORMAL: {
     camera: {
@@ -62,6 +72,10 @@ export const SCENE_REQUIREMENTS = {
   },
 };
 
+/**
+ * @description An object defining compatibility rules between scene types and other components like cameras and environments.
+ * @type {Object.<string, object>}
+ */
 export const SCENE_COMPATIBILITY = {
   NORMAL: {
     compatibleCameras: ["DEFAULT", "CINEMATIC", "DRAMATIC"],
