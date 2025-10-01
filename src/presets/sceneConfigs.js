@@ -1,5 +1,14 @@
+/**
+ * @file This file contains preset configurations for different types of scenes.
+ * @module sceneConfigs
+ */
+
 import { SCENE_REQUIREMENTS } from './sceneRequirements';
 
+/**
+ * @description A collection of preset configurations for various scenes, detailing camera, environment, fog, and other settings.
+ * @type {Object.<string, object>}
+ */
 export const SCENE_CONFIGS = {
     GALLERY: {
         type: 'NORMAL',
@@ -49,10 +58,18 @@ export const SCENE_CONFIGS = {
     }
 };
 
+/**
+ * @description Validates a scene configuration against its required properties.
+ * @param {object} config - The scene configuration object to validate.
+ * @param {string} type - The type of the scene, used to look up requirements.
+ * @returns {boolean} True if the configuration is valid.
+ * @throws {Error} If the scene type is unknown.
+ */
 export const validateConfig = (config, type) => {
     const requirements = SCENE_REQUIREMENTS[type];
     if (!requirements) {
         throw new Error(`Unknown scene type: ${type}`);
     }
+    // Note: Actual validation logic against requirements is not implemented here.
     return true;
 };

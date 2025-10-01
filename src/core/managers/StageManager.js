@@ -1,12 +1,25 @@
+/**
+ * @file Orchestrates various managers to create and control a complete 3D stage.
+ * @module StageManager
+ */
+
 import { SceneManager } from './SceneManager';
 import { CameraManager } from './CameraManager';
 import { ComponentManager } from './ComponentManager';
 import { EnvironmentManager } from './EnvironmentManager';
 import { LightingManager } from './LightingManager';
 
-// StageManager ties together the lower level managers to provide
-// a simple interface for creating and controlling a complete stage.
+/**
+ * @class StageManager
+ * @description Ties together lower-level managers (Scene, Camera, Component, etc.) to provide
+ * a simple interface for creating and controlling a complete 3D stage.
+ */
 export class StageManager {
+  /**
+   * @constructor
+   * @param {THREE.WebGLRenderer} renderer - The Three.js renderer instance.
+   * @param {HTMLElement} container - The container element for the renderer.
+   */
   constructor(renderer, container) {
     this.renderer = renderer;
     this.container = container;
@@ -20,7 +33,11 @@ export class StageManager {
   }
 
   /**
-   * Create a new stage (scene) and set up environment and lighting managers.
+   * @method createStage
+   * @description Creates a new stage (scene) and sets up its environment and lighting managers.
+   * @param {string} name - The name to identify the stage.
+   * @param {object} [options={}] - Optional configuration for the stage's scene.
+   * @returns {THREE.Scene} The newly created scene.
    */
   createStage(name, options = {}) {
     const scene = this.sceneManager.createScene(name, options);
@@ -38,7 +55,9 @@ export class StageManager {
   }
 
   /**
-   * Set the active stage for rendering.
+   * @method setActiveStage
+   * @description Sets the active stage for rendering.
+   * @param {string} name - The name of the stage to activate.
    */
   setActiveStage(name) {
     this.sceneManager.setActiveScene(name);
@@ -47,26 +66,42 @@ export class StageManager {
     }
   }
 
-  /** Add an object to the active stage. */
+  /**
+   * @method addToStage
+   * @description Adds an object to the currently active stage.
+   * @param {THREE.Object3D} object - The object to add.
+   */
   addToStage(object) {
     if (this.sceneManager.activeScene) {
       this.sceneManager.activeScene.add(object);
     }
   }
 
-  /** Update all managers each frame. */
+  /**
+   * @method update
+   * @description Updates all managers. Should be called in the animation loop.
+   * @param {number} deltaTime - The time elapsed since the last frame.
+   */
   update(deltaTime) {
     this.sceneManager.update(deltaTime);
     this.lightingManager?.update();
   }
 
-  /** Handle resize events. */
+  /**
+   * @method resize
+   * @description Handles resize events for the renderer and cameras.
+   * @param {number} width - The new width.
+   * @param {number} height - The new height.
+   */
   resize(width, height) {
     this.cameraManager.updateAspect(width, height);
     this.renderer.setSize(width, height);
   }
 
-  /** Dispose of all resources. */
+  /**
+   * @method dispose
+   * @description Disposes of all resources managed by the stage and its sub-managers.
+   */
   dispose() {
     this.lightingManager?.dispose();
     this.environmentManager?.dispose();

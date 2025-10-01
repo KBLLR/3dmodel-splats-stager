@@ -1,7 +1,24 @@
+/**
+ * @file Manages an HDRI-based environment for a Three.js scene.
+ * @module HDRIEnvironment
+ */
+
 import * as THREE from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
+/**
+ * @class HDRIEnvironment
+ * @description Represents an HDRI environment, loading a high-dynamic-range image.
+ */
 export class HDRIEnvironment {
+  /**
+   * @constructor
+   * @param {object} [params={}] - The parameters for the HDRI environment.
+   * @param {string|null} [params.path=null] - The path to the HDR file.
+   * @param {number} [params.intensity=1.0] - The intensity of the environment map.
+   * @param {number} [params.blur=0] - The blurriness of the environment map.
+   * @param {number} [params.rotation=0] - The rotation of the environment map.
+   */
   constructor(params = {}) {
     const { path = null, intensity = 1.0, blur = 0, rotation = 0 } = params;
 
@@ -18,6 +35,12 @@ export class HDRIEnvironment {
     };
   }
 
+  /**
+   * @method load
+   * @description Asynchronously loads the HDR texture and generates a PMREM environment map.
+   * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+   * @returns {Promise<THREE.Texture|undefined>} A promise that resolves with the processed environment texture, or undefined if no path is provided.
+   */
   async load(renderer) {
     if (!this.debugObject.path) return;
 
@@ -40,6 +63,10 @@ export class HDRIEnvironment {
     }
   }
 
+  /**
+   * @method updateFromDebug
+   * @description Updates the environment map's properties from the `debugObject`.
+   */
   updateFromDebug() {
     if (this.envMap) {
       this.envMap.intensity = this.debugObject.intensity;
@@ -48,6 +75,10 @@ export class HDRIEnvironment {
     }
   }
 
+  /**
+   * @method dispose
+   * @description Disposes of the environment map to free up resources.
+   */
   dispose() {
     if (this.envMap) {
       this.envMap.dispose();

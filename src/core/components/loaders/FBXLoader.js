@@ -1,6 +1,19 @@
+/**
+ * @file A custom loader for FBX models, with caching support.
+ * @module CustomFBXLoader
+ */
+
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
+/**
+ * @class CustomFBXLoader
+ * @description Wraps Three.js's FBXLoader to provide model caching and a simplified interface.
+ */
 export class CustomFBXLoader {
+  /**
+   * @constructor
+   * @description Initializes the loader and sets up a cache for loaded models.
+   */
   constructor() {
     this.type = "fbx";
     this.isCustomLoader = true;
@@ -8,6 +21,13 @@ export class CustomFBXLoader {
     this.cache = new Map();
   }
 
+  /**
+   * @method load
+   * @description Asynchronously loads an FBX model. Caches the result to avoid redundant loads.
+   * @param {string} path - The path to the FBX file.
+   * @param {function|null} [onProgress=null] - A callback function for progress events.
+   * @returns {Promise<THREE.Group>} A promise that resolves with the loaded model.
+   */
   async load(path, onProgress = null) {
     if (this.cache.has(path)) {
       return this.cache.get(path).clone();
@@ -26,6 +46,11 @@ export class CustomFBXLoader {
     }
   }
 
+  /**
+   * @method dispose
+   * @description Disposes of the loader and all cached models to free up resources.
+   * It traverses the model to dispose of geometries and materials.
+   */
   dispose() {
     this.cache.forEach((object) => {
       object.traverse((child) => {

@@ -1,6 +1,31 @@
+/**
+ * @file Extends the Three.js CinematicCamera with additional features and a simplified constructor.
+ * @module CinematicCamera
+ */
+
 import { CinematicCamera as ThreeCinematicCamera } from 'three/examples/jsm/cameras/CinematicCamera';
 
+/**
+ * @class CinematicCamera
+ * @description A custom cinematic camera that extends Three.js's CinematicCamera to provide
+ * simplified setup for position, target, and depth of field.
+ * @extends {ThreeCinematicCamera}
+ */
 export class CinematicCamera extends ThreeCinematicCamera {
+    /**
+     * @constructor
+     * @param {object} [params={}] - The parameters for the camera.
+     * @param {number} [params.fov=75] - The camera's field of view.
+     * @param {number} [params.aspect=window.innerWidth / window.innerHeight] - The camera's aspect ratio.
+     * @param {number} [params.near=0.1] - The near clipping plane.
+     * @param {number} [params.far=1000] - The far clipping plane.
+     * @param {object} [params.position={x: 0, y: 2, z: 10}] - The camera's position.
+     * @param {object} [params.target={x: 0, y: 0, z: 0}] - The point the camera is looking at.
+     * @param {object} [params.dof] - The depth of field parameters.
+     * @param {string|number} [params.dof.focus='center'] - The focus distance. 'center' sets focus to the camera's distance from origin.
+     * @param {number} [params.dof.aperture=0.1] - The camera's aperture size.
+     * @param {boolean} [params.dof.required=true] - Indicates if DOF is required.
+     */
     constructor(params = {}) {
         const {
             fov = 75,
@@ -35,6 +60,9 @@ export class CinematicCamera extends ThreeCinematicCamera {
             dof.focus;
         this.postprocessing.bokeh.aperture = dof.aperture;
 
+        /**
+         * @property {object} debugObject - An object holding the camera's parameters for debugging purposes.
+         */
         this.debugObject = {
             position,
             target,
@@ -45,6 +73,11 @@ export class CinematicCamera extends ThreeCinematicCamera {
         };
     }
 
+    /**
+     * @method updateFromDebug
+     * @description Updates the camera's properties from the `debugObject`. This is useful for
+     * dynamically updating the camera from a GUI or other debug tools.
+     */
     updateFromDebug() {
         // Update position
         this.position.set(
