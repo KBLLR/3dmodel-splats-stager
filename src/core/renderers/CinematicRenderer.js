@@ -1,7 +1,22 @@
+/**
+ * @file A renderer with settings tailored for a cinematic look, including post-processing effects.
+ * @module CinematicRenderer
+ */
+
 import { BasicRenderer } from "@renderers/BasicRenderer";
 import * as THREE from "three";
 
+/**
+ * @class CinematicRenderer
+ * @description Extends BasicRenderer with settings and properties for cinematic post-processing effects
+ * like bloom, vignette, and film grain.
+ * @extends {BasicRenderer}
+ */
 export class CinematicRenderer extends BasicRenderer {
+  /**
+   * @constructor
+   * @param {object} [params={}] - The parameters for the renderer, passed to BasicRenderer.
+   */
   constructor(params = {}) {
     super(params);
 
@@ -15,7 +30,10 @@ export class CinematicRenderer extends BasicRenderer {
     this.enableVignette = true;
     this.enableFilmGrain = true;
 
-    // Extend debug object with cinematic properties
+    /**
+     * @property {object} debugObject - An object holding the renderer's parameters for debugging,
+     * extended with cinematic post-processing properties.
+     */
     this.debugObject = {
       ...this.debugObject,
       bloom: {
@@ -40,6 +58,10 @@ export class CinematicRenderer extends BasicRenderer {
     };
   }
 
+  /**
+   * @method updateFromDebug
+   * @description Updates the renderer's properties from the `debugObject`, including cinematic effects.
+   */
   updateFromDebug() {
     super.updateFromDebug();
     // Additional cinematic updates will go here when we add post-processing

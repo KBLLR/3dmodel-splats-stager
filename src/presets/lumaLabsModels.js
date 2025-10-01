@@ -1,3 +1,12 @@
+/**
+ * @file This file contains a collection of URLs for Luma Labs AI 3D models.
+ * @module lumaLabsModels
+ */
+
+/**
+ * @description A collection of preset models from Luma Labs AI, identified by name and URL.
+ * @type {Object.<string, string>}
+ */
 export const LUMA_MODELS = {
   AUTOVAN: "https://lumalabs.ai/capture/5be32ec6-b11f-44eb-bbb7-57c5beee0d75",
   TREE: "https://lumalabs.ai/capture/5be32ec6-b11f-44eb-bbb7-57c5beee0d75l",

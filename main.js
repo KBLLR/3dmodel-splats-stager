@@ -1,3 +1,10 @@
+/**
+ * @file This is the main entry point for the 3D Model Splats Stager application.
+ * It sets up the Three.js scene, renderer, camera, and controls.
+ * It also initializes the UI for controlling fog and camera movement.
+ *
+ * @module main
+ */
 import "./style.css";
 import * as THREE from "three";
 import { Pane } from "tweakpane";
@@ -9,10 +16,16 @@ import { HDRIEnvironment } from "@components/environments/HDRIEnvironment";
 import { FOG_PRESETS } from "@presets/fogPresets"; // Ensure path is correct
 import { CAMERA_MOVEMENT_PRESETS } from "@presets/cameraPresets"; // Adjust the path if necessary
 
-// Initialize Tweakpane
+/**
+ * @description Initialize Tweakpane for UI controls.
+ * @type {Pane}
+ */
 const pane = new Pane();
 
-// Fog parameters with initial description
+/**
+ * @description Fog parameters with initial description.
+ * @type {{enabled: boolean, preset: string, color: number, density: number, description: string}}
+ */
 const fogParams = {
   enabled: true,
   preset: "SOFT_BLUE",
@@ -21,10 +34,16 @@ const fogParams = {
   description: FOG_PRESETS.SOFT_BLUE.description, // Initial description
 };
 
-// Fog controls within a folder
+/**
+ * @description Fog controls within a Tweakpane folder.
+ * @type {import("tweakpane").FolderApi}
+ */
 const fogFolder = pane.addFolder({ title: "Fog Controls" });
 
-// Dropdown options for fog presets
+/**
+ * @description Dropdown options for fog presets.
+ * @type {Object.<string, string>}
+ */
 const options = Object.fromEntries(
   Object.keys(FOG_PRESETS).map((key) => [key, key]),
 );
@@ -63,7 +82,10 @@ fogFolder.addBinding(fogParams, "description", {
   readonly: true,
 });
 
-// Camera movement parameters with `shake` properties initially set to null
+/**
+ * @description Camera movement parameters with `shake` properties initially set to null.
+ * @type {{preset: string, description: string, movement: number, stabilization: number, shake: {intensity: number|null, frequency: number|null}}}
+ */
 const movementParams = {
   preset: "STATIC",
   description: CAMERA_MOVEMENT_PRESETS.STATIC.name,
@@ -72,8 +94,16 @@ const movementParams = {
   shake: { intensity: null, frequency: null }, // Initialize shake properties
 };
 
+/**
+ * @description Camera movement controls within a Tweakpane folder.
+ * @type {import("tweakpane").FolderApi}
+ */
 const movementFolder = pane.addFolder({ title: "Camera Movement" });
 
+/**
+ * @description Dropdown options for camera movement presets.
+ * @type {Object.<string, string>}
+ */
 const movementOptions = Object.fromEntries(
   Object.keys(CAMERA_MOVEMENT_PRESETS).map((key) => [
     key,
@@ -149,7 +179,10 @@ movementFolder.addBinding(movementParams, "stabilization", {
   label: "Stabilization",
 });
 
-// Initialize Scene and Renderer
+/**
+ * @description Initialize Scene and Renderer.
+ * @type {THREE.Scene}
+ */
 const scene = new THREE.Scene();
 const canvas = document.querySelector("#webgl");
 const renderer = new CinematicRenderer({
@@ -166,7 +199,10 @@ renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Camera
+/**
+ * @description The main camera for the scene.
+ * @type {CinematicCamera}
+ */
 const camera = new CinematicCamera({
   fov: 75,
   aspect: window.innerWidth / window.innerHeight,
@@ -176,12 +212,18 @@ const camera = new CinematicCamera({
 });
 scene.add(camera);
 
-// Orbit Controls
+/**
+ * @description Orbit controls for camera manipulation.
+ * @type {OrbitControls}
+ */
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.enablePanning = true;
 
-// Infinite Ground
+/**
+ * @description An infinite ground plane.
+ * @type {THREE.Mesh}
+ */
 const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
 const groundMaterial = new THREE.MeshStandardMaterial({
   color: 0x999999,
@@ -193,7 +235,10 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// Environment
+/**
+ * @description The HDRI environment for the scene.
+ * @type {HDRIEnvironment}
+ */
 const environment = new HDRIEnvironment({
   path: "/src/assets/environmentMaps/hdr/placeholder.hdr",
   intensity: 1.0,
@@ -203,16 +248,22 @@ environment.load(renderer).then((envMap) => {
   scene.background = envMap;
 });
 
-// Fog Setup with Default Preset
-// Set initial fog
+/**
+ * @description Fog setup with a default preset.
+ */
 scene.fog = new THREE.FogExp2(fogParams.color, fogParams.density);
 
-// Stats
+/**
+ * @description Performance statistics panel.
+ * @type {Stats}
+ */
 const stats = new Stats();
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
-// Animation loop
+/**
+ * @description The main animation loop.
+ */
 function animate() {
   requestAnimationFrame(animate);
   stats.begin();
@@ -225,7 +276,9 @@ function animate() {
 
 animate();
 
-// Handle resize
+/**
+ * @description Handles window resize events.
+ */
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();

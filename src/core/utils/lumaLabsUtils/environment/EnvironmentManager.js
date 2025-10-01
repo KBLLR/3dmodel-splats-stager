@@ -1,11 +1,35 @@
+/**
+ * @file Manages 3D environments, including loading HDR images and setting up splat-based environments.
+ * @module EnvironmentManager
+ */
+
 import * as THREE from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
+/**
+ * @class EnvironmentManager
+ * @description Handles the creation, loading, and disposal of 3D environments.
+ */
 export class EnvironmentManager {
+    /**
+     * @constructor
+     * @description Initializes the EnvironmentManager.
+     */
     constructor() {
+        /**
+         * @property {THREE.Texture|null} environmentMap - The current environment map texture.
+         */
         this.environmentMap = null;
     }
 
+    /**
+     * @method setupSplatEnvironment
+     * @description Sets up the environment and background from a Luma splat object.
+     * @param {object} splat - The Luma splat object.
+     * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+     * @param {THREE.Scene} scene - The Three.js scene.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the captured cubemap texture.
+     */
     async setupSplatEnvironment(splat, renderer, scene) {
         if (!splat || !renderer || !scene) return;
 
@@ -22,6 +46,14 @@ export class EnvironmentManager {
         });
     }
 
+    /**
+     * @method loadHDREnvironment
+     * @description Loads an HDR environment map from a file path.
+     * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+     * @param {THREE.Scene} scene - The Three.js scene.
+     * @param {string} path - The path to the HDR file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded environment texture.
+     */
     async loadHDREnvironment(renderer, scene, path) {
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         pmremGenerator.compileEquirectangularShader();
@@ -47,6 +79,12 @@ export class EnvironmentManager {
         });
     }
 
+    /**
+     * @method createEnvironmentProbes
+     * @description Creates a grid of spheres to act as environment probes for testing materials.
+     * @param {number} [gridSize=3] - The number of probes in each dimension of the grid.
+     * @returns {THREE.Object3D} An Object3D containing the grid of probe spheres.
+     */
     createEnvironmentProbes(gridSize = 3) {
         const probes = new THREE.Object3D();
         const sphereGeometry = new THREE.SphereGeometry(0.05, 32, 32);
@@ -80,6 +118,10 @@ export class EnvironmentManager {
         return probes;
     }
 
+    /**
+     * @method dispose
+     * @description Disposes of the environment map to free up resources.
+     */
     dispose() {
         if (this.environmentMap) {
             this.environmentMap.dispose();
