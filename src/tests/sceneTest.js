@@ -1,3 +1,4 @@
+import { getFormattedMonth } from "../utils/dateUtils";
 import { SCENE_REQUIREMENTS } from "../presets/sceneRequirements";
 import { SCENE_CONFIGS } from "../presets/sceneConfigs";
 import * as THREE from "three";
@@ -116,7 +117,17 @@ class SceneTest {
       }
     });
 
+    this.testDateUtils();
+
     this.logResult("Tests Complete", true);
+  }
+
+  testDateUtils() {
+    this.logResult("Running Date Utils Tests...", true);
+    const testDate = new Date("2023-01-15");
+    const month = getFormattedMonth(testDate);
+    const passed = month === "Jan";
+    this.logResult(`getFormattedMonth should return 'Jan' for January`, passed);
   }
 }
 
