@@ -5,7 +5,7 @@
  *
  * @module main
  */
-import "@style.css";
+import "./style.css";
 import * as THREE from "three";
 import { Pane } from "tweakpane";
 import Stats from "stats.js";
