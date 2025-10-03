@@ -1,11 +1,12 @@
 /**
  * @file This file contains a collection of presets for fog effects.
- * @module fogPresets
+ * @description These presets are loaded dynamically by the `PresetManager` to reduce the initial memory footprint.
+ * @module presets/fogPresets
  */
 
 /**
- * @description A collection of fog presets, each with a color, density, and description.
- * These can be used to quickly set atmospheric effects in a scene.
+ * @description A collection of fog presets, each defining a unique atmospheric effect with properties for color, density, and a brief description.
+ * These presets are designed to be loaded on demand, allowing for efficient management of visual resources.
  * @type {Object.<string, {color: string|null, density: number, description: string}>}
  */
 export const FOG_PRESETS = {

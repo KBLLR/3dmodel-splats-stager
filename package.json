@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "clean": "rimraf dist",
     "test:scene": "vite src/tests",
-    "test": "npm run test:scene"
+    "test": "npm run test:scene",
+    "test:playwright": "start-server-and-test \"npm run test:scene\" http://localhost:5173 \"node src/tests/playwright.test.cjs\""
   },
   "dependencies": {
     "@lumaai/luma-web": "^0.2.2",
@@ -25,8 +26,10 @@
   "devDependencies": {
     "@types/three": "0.157.2",
     "eslint": "^8.51.0",
+    "playwright": "^1.55.1",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
+    "start-server-and-test": "^2.1.2",
     "vite": "^7.1.7",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-env-compatible": "^2.0.1",
@@ -46,4 +49,3 @@
   },
   "prettier": {}
 }
-

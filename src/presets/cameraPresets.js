@@ -1,6 +1,7 @@
 /**
- * @file This file contains presets for camera settings, movements, validation rules, and compatibility checks.
- * @module cameraPresets
+ * @file This file contains presets for camera settings and movements.
+ * @description These presets are loaded dynamically by the `PresetManager` to reduce the initial memory footprint.
+ * @module presets/cameraPresets
  */
 
 /**

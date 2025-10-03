@@ -13,171 +13,132 @@ import { CinematicRenderer } from "@renderers/CinematicRenderer";
 import { CinematicCamera } from "@cameras/CinematicCamera";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { HDRIEnvironment } from "@components/environments/HDRIEnvironment";
-import { FOG_PRESETS } from "@presets/fogPresets"; // Ensure path is correct
-import { CAMERA_MOVEMENT_PRESETS } from "@presets/cameraPresets"; // Adjust the path if necessary
+import { PresetManager } from "@core/PresetManager";
+import { PRESET_REGISTRY } from "@presets/index";
 
-/**
- * @description Initialize Tweakpane for UI controls.
- * @type {Pane}
- */
 const pane = new Pane();
+const presetManager = new PresetManager();
 
-/**
- * @description Fog parameters with initial description.
- * @type {{enabled: boolean, preset: string, color: number, density: number, description: string}}
- */
 const fogParams = {
   enabled: true,
   preset: "SOFT_BLUE",
-  color: FOG_PRESETS.SOFT_BLUE.color,
-  density: FOG_PRESETS.SOFT_BLUE.density,
-  description: FOG_PRESETS.SOFT_BLUE.description, // Initial description
+  color: 0, // Initial value
+  density: 0, // Initial value
+  description: "", // Initial value
 };
 
-/**
- * @description Fog controls within a Tweakpane folder.
- * @type {import("tweakpane").FolderApi}
- */
-const fogFolder = pane.addFolder({ title: "Fog Controls" });
-
-/**
- * @description Dropdown options for fog presets.
- * @type {Object.<string, string>}
- */
-const options = Object.fromEntries(
-  Object.keys(FOG_PRESETS).map((key) => [key, key]),
-);
-
-// Enable/disable fog
-fogFolder
-  .addBinding(fogParams, "enabled", { label: "Enable Fog" })
-  .on("change", ({ value }) => {
-    scene.fog = value
-      ? new THREE.FogExp2(fogParams.color, fogParams.density)
-      : null;
-  });
-
-// Fog preset dropdown with description
-fogFolder
-  .addBinding(fogParams, "preset", {
-    options: options,
-    label: "Preset",
-  })
-  .on("change", ({ value }) => {
-    const selectedPreset = FOG_PRESETS[value];
-    fogParams.color = selectedPreset.color;
-    fogParams.density = selectedPreset.density;
-    fogParams.description = selectedPreset.description; // Update description
-    if (scene.fog) {
-      scene.fog.color.set(fogParams.color);
-      scene.fog.density = fogParams.density;
-    }
-    pane.refresh(); // Refresh the pane to update description
-  });
-
-// Display the description of the selected fog preset
-fogFolder.addBinding(fogParams, "description", {
-  view: "text", // Set view to text for description
-  label: "Description",
-  readonly: true,
-});
-
-/**
- * @description Camera movement parameters with `shake` properties initially set to null.
- * @type {{preset: string, description: string, movement: number, stabilization: number, shake: {intensity: number|null, frequency: number|null}}}
- */
 const movementParams = {
   preset: "STATIC",
-  description: CAMERA_MOVEMENT_PRESETS.STATIC.name,
-  movement: CAMERA_MOVEMENT_PRESETS.STATIC.movement,
-  stabilization: CAMERA_MOVEMENT_PRESETS.STATIC.stabilization,
-  shake: { intensity: null, frequency: null }, // Initialize shake properties
+  description: "",
+  movement: false,
+  stabilization: true,
+  shake: { intensity: null, frequency: null },
 };
 
-/**
- * @description Camera movement controls within a Tweakpane folder.
- * @type {import("tweakpane").FolderApi}
- */
-const movementFolder = pane.addFolder({ title: "Camera Movement" });
+async function setupUI() {
+  // Fog Controls
+  const fogFolder = pane.addFolder({ title: "Fog Controls" });
+  const fogPresetNames = await presetManager.getPresetNames(PRESET_REGISTRY.FOG);
+  const fogOptions = Object.fromEntries(fogPresetNames.map((key) => [key, key]));
 
-/**
- * @description Dropdown options for camera movement presets.
- * @type {Object.<string, string>}
- */
-const movementOptions = Object.fromEntries(
-  Object.keys(CAMERA_MOVEMENT_PRESETS).map((key) => [
-    key,
-    CAMERA_MOVEMENT_PRESETS[key].name,
-  ]),
-);
+  const initialFogPreset = await presetManager.loadPreset(
+    PRESET_REGISTRY.FOG,
+    fogParams.preset,
+  );
+  fogParams.color = initialFogPreset.color;
+  fogParams.density = initialFogPreset.density;
+  fogParams.description = initialFogPreset.description;
 
-// Dynamic UI elements for `shake`
-let shakeIntensityBinding = null;
-let shakeFrequencyBinding = null;
+  fogFolder.addBinding(fogParams, "enabled", { label: "Enable Fog" }).on("change", ({ value }) => {
+    scene.fog = value ? new THREE.FogExp2(fogParams.color, fogParams.density) : null;
+  });
 
-// Update movement parameters based on preset selection
-movementFolder
-  .addBinding(movementParams, "preset", {
-    options: movementOptions,
-    label: "Movement Preset",
-  })
-  .on("change", ({ value }) => {
-    const selectedPreset = CAMERA_MOVEMENT_PRESETS[value];
+  fogFolder
+    .addBinding(fogParams, "preset", { options: fogOptions, label: "Preset" })
+    .on("change", async ({ value }) => {
+      const selectedPreset = await presetManager.loadPreset(PRESET_REGISTRY.FOG, value);
+      fogParams.color = selectedPreset.color;
+      fogParams.density = selectedPreset.density;
+      fogParams.description = selectedPreset.description;
+      if (scene.fog) {
+        scene.fog.color.set(fogParams.color);
+        scene.fog.density = fogParams.density;
+      }
+      pane.refresh();
+    });
 
-    // Update basic parameters
-    movementParams.description = selectedPreset.name;
-    movementParams.movement = selectedPreset.movement;
-    movementParams.stabilization = selectedPreset.stabilization;
-    movementParams.shake = selectedPreset.shake || {
-      intensity: null,
-      frequency: null,
-    }; // Handle shake conditionally
+  fogFolder.addBinding(fogParams, "description", {
+    view: "text",
+    label: "Description",
+    readonly: true,
+  });
 
-    // Remove previous `shake` bindings if they exist
-    if (shakeIntensityBinding) {
-      movementFolder.remove(shakeIntensityBinding);
+  // Camera Movement Controls
+  const movementFolder = pane.addFolder({ title: "Camera Movement" });
+  const movementPresetNames = await presetManager.getPresetNames(
+    PRESET_REGISTRY.CAMERA_MOVEMENT,
+  );
+  const movementOptions = Object.fromEntries(
+    movementPresetNames.map((key) => [key, key]),
+  );
+
+  const initialMovementPreset = await presetManager.loadPreset(
+    PRESET_REGISTRY.CAMERA_MOVEMENT,
+    movementParams.preset,
+  );
+  movementParams.description = initialMovementPreset.name;
+  movementParams.movement = initialMovementPreset.movement;
+  movementParams.stabilization = initialMovementPreset.stabilization;
+
+  let shakeIntensityBinding = null;
+  let shakeFrequencyBinding = null;
+
+  movementFolder
+    .addBinding(movementParams, "preset", {
+      options: movementOptions,
+      label: "Movement Preset",
+    })
+    .on("change", async ({ value }) => {
+      const selectedPreset = await presetManager.loadPreset(
+        PRESET_REGISTRY.CAMERA_MOVEMENT,
+        value,
+      );
+
+      movementParams.description = selectedPreset.name;
+      movementParams.movement = selectedPreset.movement;
+      movementParams.stabilization = selectedPreset.stabilization;
+      movementParams.shake = selectedPreset.shake || { intensity: null, frequency: null };
+
+      if (shakeIntensityBinding) movementFolder.remove(shakeIntensityBinding);
+      if (shakeFrequencyBinding) movementFolder.remove(shakeFrequencyBinding);
       shakeIntensityBinding = null;
-    }
-    if (shakeFrequencyBinding) {
-      movementFolder.remove(shakeFrequencyBinding);
       shakeFrequencyBinding = null;
-    }
 
-    // Conditionally add `shake` controls if shake exists in the selected preset
-    if (selectedPreset.shake) {
-      shakeIntensityBinding = movementFolder.addBinding(
-        movementParams.shake,
-        "intensity",
-        {
+      if (selectedPreset.shake) {
+        shakeIntensityBinding = movementFolder.addBinding(movementParams.shake, "intensity", {
           label: "Shake Intensity",
           min: 0,
           max: 1,
-        },
-      );
-      shakeFrequencyBinding = movementFolder.addBinding(
-        movementParams.shake,
-        "frequency",
-        {
+        });
+        shakeFrequencyBinding = movementFolder.addBinding(movementParams.shake, "frequency", {
           label: "Shake Frequency",
           min: 0,
           max: 10,
-        },
-      );
-    }
+        });
+      }
+      pane.refresh();
+    });
 
-    pane.refresh(); // Refresh to apply changes
+  movementFolder.addBinding(movementParams, "description", {
+    view: "text",
+    label: "Description",
+    readonly: true,
   });
+  movementFolder.addBinding(movementParams, "movement", { label: "Movement" });
+  movementFolder.addBinding(movementParams, "stabilization", { label: "Stabilization" });
 
-// Add static bindings for non-conditional fields
-movementFolder.addBinding(movementParams, "description", {
-  view: "text",
-  label: "Description",
-  readonly: true,
-});
-movementFolder.addBinding(movementParams, "movement", { label: "Movement" });
-movementFolder.addBinding(movementParams, "stabilization", {
-  label: "Stabilization",
-});
+  pane.refresh();
+}
 
 /**
  * @description Initialize Scene and Renderer.
@@ -274,7 +235,10 @@ function animate() {
   stats.end();
 }
 
-animate();
+setupUI().then(() => {
+  scene.fog = new THREE.FogExp2(fogParams.color, fogParams.density);
+  animate();
+});
 
 /**
  * @description Handles window resize events.
