@@ -1,10 +1,8 @@
 import { defineConfig } from "vite";
 import glsl from "vite-plugin-glsl";
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
+import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const resolveSrc = (path) => fileURLToPath(new URL(`./src/${path}`, import.meta.url));
 
 export default defineConfig({
   plugins: [glsl()],
@@ -13,40 +11,40 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src"),
+      "@": resolveSrc(""),
       // Core
-      "@core": resolve(__dirname, "./src/core"),
-      "@components": resolve(__dirname, "./src/core/components"),
-      "@managers": resolve(__dirname, "./src/core/managers"),
-      "@generators": resolve(__dirname, "./src/core/generators"),
-      "@scenes": resolve(__dirname, "./src/core/scenes"),
-      "@utils": resolve(__dirname, "./src/core/utils"),
+      "@core": resolveSrc("core"),
+      "@components": resolveSrc("core/components"),
+      "@managers": resolveSrc("core/managers"),
+      "@generators": resolveSrc("core/generators"),
+      "@scenes": resolveSrc("core/scenes"),
+      "@utils": resolveSrc("core/utils"),
       // Components sub-directories
-      "@encoders": resolve(__dirname, "./src/core/components/encoders"),
-      "@environments": resolve(__dirname, "./src/core/components/environments"),
-      "@geometries": resolve(__dirname, "./src/core/components/geometries"),
-      "@lights": resolve(__dirname, "./src/core/components/lights"),
-      "@loaders": resolve(__dirname, "./src/core/components/loaders"),
-      "@materials": resolve(__dirname, "./src/core/components/materials"),
-      "@cameras": resolve(__dirname, "./src/core/components/cameras"),
+      "@encoders": resolveSrc("core/components/encoders"),
+      "@environments": resolveSrc("core/components/environments"),
+      "@geometries": resolveSrc("core/components/geometries"),
+      "@lights": resolveSrc("core/components/lights"),
+      "@loaders": resolveSrc("core/components/loaders"),
+      "@materials": resolveSrc("core/components/materials"),
+      "@cameras": resolveSrc("core/components/cameras"),
 
       // Assets
-      "@assets": resolve(__dirname, "./src/assets"),
-      "@models": resolve(__dirname, "./src/assets/models"),
-      "@textures": resolve(__dirname, "./src/assets/textures"),
-      "@environmentMaps": resolve(__dirname, "./src/assets/environmentMaps"),
-      "@panoramas": resolve(__dirname, "./src/assets/panoramas"),
+      "@assets": resolveSrc("assets"),
+      "@models": resolveSrc("assets/models"),
+      "@textures": resolveSrc("assets/textures"),
+      "@environmentMaps": resolveSrc("assets/environmentMaps"),
+      "@panoramas": resolveSrc("assets/panoramas"),
 
       // Other directories
-      "@effects": resolve(__dirname, "./src/effects"),
-      "@monitoring": resolve(__dirname, "./src/monitoring"),
-      "@postprocessing": resolve(__dirname, "./src/postprocessing"),
-      "@shaders": resolve(__dirname, "./src/shaders"),
-      "@controls": resolve(__dirname, "./src/controls"),
-      "@config": resolve(__dirname, "./src/config"),
-      "@presets": resolve(__dirname, "./src/presets"),
-      "@renderers": resolve(__dirname, "./src/core/renderers"),
-      "@tests": resolve(__dirname, "./src/tests"),
+      "@effects": resolveSrc("effects"),
+      "@monitoring": resolveSrc("monitoring"),
+      "@postprocessing": resolveSrc("postprocessing"),
+      "@shaders": resolveSrc("shaders"),
+      "@controls": resolveSrc("controls"),
+      "@config": resolveSrc("config"),
+      "@presets": resolveSrc("presets"),
+      "@renderers": resolveSrc("core/renderers"),
+      "@tests": resolveSrc("tests"),
     },
   },
   server: {

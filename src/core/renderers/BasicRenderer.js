@@ -80,10 +80,14 @@ export class BasicRenderer extends THREE.WebGLRenderer {
         // Update encoding
         const encodingTypes = {
             'Linear': THREE.LinearEncoding,
-            'sRGB': THREE.sRGBEncoding,
-            'Gamma': THREE.GammaEncoding
+            'sRGB': THREE.sRGBEncoding
         };
-        this.outputEncoding = encodingTypes[this.debugObject.outputEncoding];
+        if (this.debugObject.outputEncoding === 'Gamma') {
+            console.warn(
+                '[BasicRenderer] GammaEncoding is not available in this version of three.js; falling back to sRGBEncoding.'
+            );
+        }
+        this.outputEncoding = encodingTypes[this.debugObject.outputEncoding] ?? THREE.sRGBEncoding;
 
         // Update shadow map type
         const shadowMapTypes = {
