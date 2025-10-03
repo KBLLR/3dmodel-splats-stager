@@ -14,8 +14,10 @@ export * from './cameraPresets';
  */
 export const PRESET_REGISTRY = {
     CAMERA: 'camera',
+    CAMERA_MOVEMENT: 'camera_movement',
     ENVIRONMENT: 'environment',
     LIGHTING: 'lighting',
+    FOG: 'fog',
     AUDIO: 'audio',
     VISUAL: 'visual',
     EFFECTS: 'effects',
