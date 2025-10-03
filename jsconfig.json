@@ -24,7 +24,11 @@
       "@postprocessing/*": ["src/postprocessing/*"],
       "@shaders/*": ["src/shaders/*"],
       "@controls/*": ["src/controls/*"],
-      "@config/*": ["src/config/*"]
+      "@config/*": ["src/config/*"],
+      "@renderers/*": ["src/core/renderers/*"],
+      "@cameras/*": ["src/core/components/cameras/*"],
+      "@presets/*": ["src/presets/*"],
+      "@tests/*": ["src/tests/*"]
     }
   },
   "include": ["src/**/*"],
