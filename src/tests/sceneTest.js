@@ -4,7 +4,7 @@
  * @module sceneTest
  */
 
-import { getFormattedMonth } from "../utils/dateUtils";
+import { getFormattedMonth, getCurrentYear } from "../utils/dateUtils";
 import { SCENE_REQUIREMENTS } from "../presets/sceneRequirements";
 import { SCENE_CONFIGS } from "../presets/sceneConfigs";
 import * as THREE from "three";
@@ -169,6 +169,12 @@ class SceneTest {
     const month = getFormattedMonth(testDate);
     const passed = month === "Jan";
     this.logResult(`getFormattedMonth should return 'Jan' for January`, passed);
+
+    // Test that getCurrentYear returns the correct year as a string.
+    const currentYear = new Date().getFullYear().toString();
+    const year = getCurrentYear();
+    const yearTestPassed = year === currentYear;
+    this.logResult(`getCurrentYear should return the current year (${currentYear})`, yearTestPassed);
   }
 }
 

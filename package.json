@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .js --fix",
     "format": "prettier --write .",
     "clean": "rimraf dist",
-    "test:scene": "vite src/tests",
+    "test:scene": "vite",
     "test": "npm run test:scene",
     "test:playwright": "start-server-and-test \"npm run test:scene\" http://localhost:5173 \"node src/tests/playwright.test.cjs\""
   },
