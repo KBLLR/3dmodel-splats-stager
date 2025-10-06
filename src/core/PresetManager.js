@@ -26,11 +26,12 @@ export class PresetManager {
 
   /**
    * @constructor
+   * @param {Object} [manifest] - An optional manifest object for testing or custom presets.
    * @description Initializes the PresetManager with a manifest of available presets.
    */
-  constructor() {
+  constructor(manifest) {
     this.#cache = new Map();
-    this.#manifest = {
+    this.#manifest = manifest || {
       [PRESET_REGISTRY.CAMERA]: {
         loader: () => import("@presets/cameraPresets"),
         exportName: "CAMERA_PRESETS",

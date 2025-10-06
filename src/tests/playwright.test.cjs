@@ -9,7 +9,7 @@ const path = require('path');
   page.on('console', msg => console.log(msg.text()));
 
   try {
-    await page.goto('http://localhost:5173', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/src/tests/', { waitUntil: 'networkidle' });
 
     // Wait for the test results to be populated
     await page.waitForSelector('#testResults', { timeout: 30000 });
