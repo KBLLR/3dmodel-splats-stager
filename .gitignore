@@ -44,6 +44,10 @@ lerna-debug.log*
 *.mp4
 *.webm
 
+# Environments
+.env
+
+
 # Asset directories
 src/assets/models/glb/*
 src/assets/hdri/*
