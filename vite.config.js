@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  plugins: [glsl()],
+  plugins: [glsl({ query: '?url', import: 'default' })],
   optimizeDeps: {
     include: ["tweakpane"],
   },
