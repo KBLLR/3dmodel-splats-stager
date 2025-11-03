@@ -1,0 +1,2375 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <style>
+            :root {
+                --glass-bg: rgba(255, 255, 255, 0.1);
+                --glass-border: rgba(255, 255, 255, 0.18);
+                --glass-shadow: rgba(0, 0, 0, 0.1);
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            canvas {
+                width: 100% !important;
+                height: 100% !important;
+                display: block;
+            }
+            .glass-module {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                border-radius: 16px;
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            }
+
+            .dynamic-header {
+                position: absolute;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 2rem;
+                text-align: center;
+                animation: fadeSlideDown 0.8s ease-out;
+                pointer-events: auto;
+            }
+
+            .title {
+                font-size: clamp(2rem, 5vw, 3.5rem);
+                font-weight: 200;
+                margin: 0;
+                transition: all 0.5s ease;
+                color: white;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            }
+
+            .subtitle {
+                font-size: clamp(1rem, 2vw, 1.5rem);
+                opacity: 0.8;
+                margin-top: 0.5rem;
+                color: white;
+            }
+
+            .music-player {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                width: min(300px, 90vw);
+                padding: 1rem;
+                pointer-events: auto;
+                transform: translateY(0);
+                transition: transform 0.3s ease;
+            }
+
+            .music-player:hover {
+                transform: translateY(-5px);
+            }
+
+            .player-visualization {
+                height: 60px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                overflow: hidden;
+            }
+
+            .player-controls {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .ui-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none; /* Allow interaction with 3D scene */
+                z-index: 1000;
+            }
+
+            .gui-tooltip {
+                position: fixed;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                pointer-events: none;
+                z-index: 9999;
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                max-width: 200px;
+            }
+
+            .resize-handle {
+                opacity: 0.5;
+                transition: opacity 0.2s ease;
+            }
+
+            .resize-handle:hover {
+                opacity: 1;
+            }
+
+            @keyframes fadeSlideDown {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+            }
+
+            @media (max-width: 768px) {
+                .music-player {
+                    bottom: 1rem;
+                    right: 1rem;
+                    left: 1rem;
+                    width: auto;
+                }
+
+                .dynamic-header {
+                    width: 90%;
+                    padding: 1.5rem;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/",
+                    "@lumaai/luma-web": "https://unpkg.com/@lumaai/luma-web@0.2.0/dist/library/luma-web.module.js",
+                    "dat.gui": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js"
+                }
+            }
+        </script>
+        <div class="ui-container">
+            <header class="dynamic-header glass-module">
+                <h1 class="title">Chapter 01</h1>
+                <p class="subtitle">A moment of Mediterranean reflection</p>
+            </header>
+            <div class="floating-modules">
+                <div class="music-player glass-module">
+                    <div class="player-visualization"></div>
+                    <div class="player-controls">
+                        <button class="control-btn play-pause">
+                            <span class="icon">▶</span>
+                        </button>
+                        <div class="progress-bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="volume-control">
+                            <input type="range" min="0" max="100" value="50" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="module">
+            import {
+                WebGLRenderer,
+                PerspectiveCamera,
+                Scene,
+                Color,
+                FogExp2,
+                AudioListener,
+                AudioLoader,
+                Audio,
+                GridHelper,
+                AxesHelper,
+                EquirectangularReflectionMapping,
+                PMREMGenerator,
+                ACESFilmicToneMapping,
+            } from "three";
+            import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+            import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+            import { GUI } from "dat.gui";
+            import { LumaSplatsThree } from "@lumaai/luma-web";
+
+            // Consolidated presets
+            const PRESETS = {
+                environment: {
+                    none: "fog",
+                    adams_bridge: "./backgrounds/adamsbridge.hdr",
+                    grunge_pop: "./backgrounds/grunge_pop.hdr",
+                    comic: "./backgrounds/comic.hdr",
+                    neo_tokyo: "./backgrounds/neo_tokyo.hdr",
+                    neo_tokyov2: "./backgrounds/neo_tokyo-v2.hdr",
+                    studio: "./backgrounds/softbox.hdr",
+                    misty: "./backgrounds/kloofendal_28d_misty_puresky_4k.hdr",
+                    sunset03: "./backgrounds/T_HDR360_Pointe_Sunset_03.hdr",
+                    sunset08: "./backgrounds/T_HDR360_Pointe_Sunset_08.hdr",
+                    dusk: "./backgrounds/qwantani_dusk_2_2k.exr",
+                },
+                colors: {
+                    soft_blue: "#e0e1ff",
+                    morning_mist: "#d4e1ff",
+                    warm_dawn: "#fff1e6",
+                    forest_haze: "#e6ffe6",
+                    twilight_purple: "#f0e6ff",
+                    deep_blue: "#2c3e50",
+                    dark_teal: "#2d545e",
+                    dark_atmosphere: "#1a1a1a",
+                    full_moon: "#C4C9D6",
+                    blue_moon: "#A5B5D9",
+                    blood_moon: "#8B0000",
+                    golden_hour: "#FFA500",
+                    magic_hour: "#4B0082",
+                    dawn: "#FF7F50",
+                    dusk: "#483D8B",
+                },
+                audio: {
+                    none: null,
+                    basement: "./audio/ir-basement.wav",
+                    murmur: "./audio/murmur.mp3",
+                    forest: "./audio/ir-forest.wav",
+                    church: "./audio/ir-church.wav",
+                    room: "./audio/ir-room.wav",
+                    lucid_dream: "./audio/Lucid_Space-Joseph_Beg.mp3",
+                    hypnotic_dream: "./audio/Hypnotic-beat.wav",
+                    bon13_maedo: "./audio/Bon13-Maedo Meada.mp3",
+                },
+            };
+
+            // Unified settings object
+            const settings = {
+                environment: {
+                    preset: "adams_bridge",
+                    intensity: 1.0,
+                    rotation: 0,
+                    exposure: 1.0,
+                    fog: {
+                        enabled: true,
+                        color: PRESETS.colors.deep_blue,
+                        density: 0.3,
+                        colorPreset: "morning_mist",
+                    },
+                },
+                camera: {
+                    controls: {
+                        enableDamping: true,
+                        dampingFactor: 0.02,
+                        enableZoom: true,
+                        zoomSpeed: 0.1,
+                        enableRotate: true,
+                        rotateSpeed: 1.0,
+                        autoRotate: true,
+                        autoRotateSpeed: 0.5,
+                        enablePan: false,
+                        limits: {
+                            minDistance: 1,
+                            maxDistance: 2.2,
+                            minPolarAngle: 90, // Stored in degrees for easier editing
+                            maxPolarAngle: 90,
+                            minAzimuthAngle: -180,
+                            maxAzimuthAngle: 180,
+                        },
+                    },
+                },
+                audio: {
+                    enabled: true,
+                    volume: 0.5,
+                    preset: "lucid_dream",
+                    reverb: {
+                        enabled: true,
+                        space: "none",
+                        level: 0.5,
+                    },
+                },
+                debug: {
+                    showGrid: false,
+                    showAxes: false,
+                },
+                splats: {
+                    exposure: 1.0,
+                    fogDensity: 0.3,
+                    fogColor: PRESETS.colors.full_moon,
+                    environmentCapture: false,
+                },
+                capture: {
+                    isRecording: false,
+                    format: "webm",
+                    quality: "high",
+                    frameRate: 60,
+                    duration: 10,
+                    countdown: 3,
+                    status: "Ready",
+                },
+            };
+
+            // Renderer setup
+            let renderer = new WebGLRenderer({
+                antialias: true,
+                alpha: true,
+                transparent: true,
+                premultipliedAlpha: true,
+                logarithmicDepthBuffer: true,
+                toneMapping: ACESFilmicToneMapping,
+            });
+
+            // Resource Manager class for handling assets
+            class ResourceManager {
+                constructor(renderer) {
+                    this.renderer = renderer;
+                    this.rgbeLoader = new RGBELoader();
+                    this.exrLoader = new EXRLoader();
+                    this.audioLoader = new AudioLoader();
+                    this.pmremGenerator = new PMREMGenerator(renderer);
+                    this.pmremGenerator.compileEquirectangularShader();
+                    // Cache for loaded environments
+                    this.envMapCache = new Map();
+                }
+
+                async loadHDRI(path) {
+                    if (path === "fog") return null;
+                    if (this.envMapCache.has(path)) {
+                        return this.envMapCache.get(path);
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        const fileExtension = path
+                            .split(".")
+                            .pop()
+                            .toLowerCase();
+                        const loader =
+                            fileExtension === "exr"
+                                ? this.exrLoader
+                                : this.rgbeLoader;
+
+                        loader.load(
+                            path,
+                            (texture) => {
+                                texture.mapping =
+                                    EquirectangularReflectionMapping;
+                                const envMap =
+                                    this.pmremGenerator.fromEquirectangular(
+                                        texture,
+                                    ).texture;
+                                texture.dispose();
+                                this.pmremGenerator.dispose();
+
+                                // Cache the result
+                                this.envMapCache.set(path, envMap);
+
+                                resolve(envMap);
+                            },
+                            // Progress callback
+                            (progress) => {
+                                const percent =
+                                    (progress.loaded / progress.total) * 100;
+                                this.onProgress?.(percent);
+                            },
+                            reject,
+                        );
+                    });
+                }
+                // Add progress callback setter
+                setProgressCallback(callback) {
+                    this.onProgress = callback;
+                }
+
+                async loadAudio(path) {
+                    if (!path) return null;
+
+                    return new Promise((resolve, reject) => {
+                        this.audioLoader.load(path, resolve, undefined, reject);
+                    });
+                }
+            }
+
+            class UIManager {
+                constructor() {
+                    this.title = document.querySelector(".title");
+                    this.subtitle = document.querySelector(".subtitle");
+                    this.visualizer = document.querySelector(
+                        ".player-visualization",
+                    );
+                    this.initializeVisualizer();
+                }
+
+                initializeVisualizer() {
+                    // Create canvas for visualization
+                    this.canvas = document.createElement("canvas");
+                    this.ctx = this.canvas.getContext("2d");
+                    this.visualizer.appendChild(this.canvas);
+                    this.resizeVisualizer();
+
+                    // Handle resize
+                    window.addEventListener("resize", () =>
+                        this.resizeVisualizer(),
+                    );
+
+                    // Animation properties
+                    this.bars = 32;
+                    this.barWidth = this.canvas.width / this.bars;
+                    this.previousHeights = new Array(this.bars).fill(0);
+                    this.smoothingFactor = 0.3; // Adjust for smoother/sharper transitions
+                }
+
+                resizeVisualizer() {
+                    this.canvas.width = this.visualizer.clientWidth;
+                    this.canvas.height = this.visualizer.clientHeight;
+                    this.barWidth = this.canvas.width / this.bars;
+                }
+
+                updateVisualizer(audioData) {
+                    if (!this.ctx || !audioData) return;
+
+                    // Clear canvas
+                    this.ctx.clearRect(
+                        0,
+                        0,
+                        this.canvas.width,
+                        this.canvas.height,
+                    );
+
+                    // Gradient background
+                    const gradient = this.ctx.createLinearGradient(
+                        0,
+                        0,
+                        0,
+                        this.canvas.height,
+                    );
+                    gradient.addColorStop(0, "rgba(255, 255, 255, 0.2)");
+                    gradient.addColorStop(1, "rgba(255, 255, 255, 0.05)");
+                    this.ctx.fillStyle = gradient;
+
+                    // Convert audio data to visualization
+                    const analyzer = audioData.getByteFrequencyData();
+                    const bufferLength = analyzer.length;
+                    const dataArray = new Uint8Array(bufferLength);
+                    audioData.getByteFrequencyData(dataArray);
+
+                    // Draw bars
+                    const barSpacing = 2;
+                    const maxHeight = this.canvas.height;
+
+                    for (let i = 0; i < this.bars; i++) {
+                        // Get frequency data for this bar
+                        const dataIndex = Math.floor(
+                            (i * bufferLength) / this.bars,
+                        );
+                        let height = (dataArray[dataIndex] / 255) * maxHeight;
+
+                        // Smooth transition between heights
+                        height =
+                            this.previousHeights[i] +
+                            (height - this.previousHeights[i]) *
+                                this.smoothingFactor;
+                        this.previousHeights[i] = height;
+
+                        // Calculate bar position
+                        const x = i * (this.barWidth + barSpacing);
+                        const y = this.canvas.height - height;
+
+                        // Draw bar with rounded corners
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(x, y, this.barWidth, height, 4);
+
+                        // Create gradient for each bar
+                        const barGradient = this.ctx.createLinearGradient(
+                            x,
+                            y,
+                            x,
+                            y + height,
+                        );
+                        barGradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+                        barGradient.addColorStop(1, "rgba(255, 255, 255, 0.3)");
+                        this.ctx.fillStyle = barGradient;
+
+                        this.ctx.fill();
+
+                        // Add glow effect
+                        this.ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
+                        this.ctx.shadowBlur = 10;
+                        this.ctx.shadowOffsetX = 0;
+                        this.ctx.shadowOffsetY = 0;
+                    }
+
+                    // Add ripple effect
+                    this.drawRipples();
+                }
+
+                drawRipples() {
+                    // Add subtle circular ripples
+                    const time = Date.now() * 0.001;
+                    const ripples = 3;
+
+                    for (let i = 0; i < ripples; i++) {
+                        const size =
+                            ((time + i * 0.5) % 2) * this.canvas.width * 0.5;
+                        const opacity = 1 - size / (this.canvas.width * 0.5);
+
+                        if (opacity > 0) {
+                            this.ctx.beginPath();
+                            this.ctx.arc(
+                                this.canvas.width * 0.5,
+                                this.canvas.height * 0.5,
+                                size,
+                                0,
+                                Math.PI * 2,
+                            );
+                            this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.1})`;
+                            this.ctx.lineWidth = 2;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                // Helper method to create smooth transitions
+                lerp(start, end, amt) {
+                    return (1 - amt) * start + amt * end;
+                }
+
+                // Method to start visualization
+                startVisualization(audioContext, audioSource) {
+                    if (!this.analyzer) {
+                        this.analyzer = audioContext.createAnalyser();
+                        this.analyzer.fftSize = 2048;
+                        audioSource.connect(this.analyzer);
+                    }
+
+                    const animate = () => {
+                        this.updateVisualizer(this.analyzer);
+                        requestAnimationFrame(animate);
+                    };
+
+                    animate();
+                }
+
+                // Method to stop visualization
+                stopVisualization() {
+                    if (this.analyzer) {
+                        this.analyzer.disconnect();
+                        this.analyzer = null;
+                    }
+                    // Clear canvas
+                    this.ctx.clearRect(
+                        0,
+                        0,
+                        this.canvas.width,
+                        this.canvas.height,
+                    );
+                }
+            }
+
+            // Audio Manager class for handling sound
+            class AudioManager {
+                constructor(listener) {
+                    if (!listener) {
+                        throw new Error("AudioListener is required");
+                    }
+
+                    // Wait for context to be ready
+                    if (
+                        !listener.context ||
+                        listener.context.state === "closed"
+                    ) {
+                        throw new Error(
+                            "AudioContext must be initialized and not closed",
+                        );
+                    }
+
+                    this.listener = listener;
+                    this.sound = new Audio(listener);
+                    this.convolver = listener.context.createConvolver();
+                    this.reverbGain = listener.context.createGain();
+                    this.analyzerGain = listener.context.createGain();
+                    this.analyzer = listener.context.createAnalyser();
+
+                    // Set up audio routing
+                    this.setupAudioRouting();
+
+                    this.visualizationActive = false;
+
+                    // Connect convolver to gain node
+                    this.convolver.connect(this.reverbGain);
+                    this.reverbGain.connect(listener.context.destination);
+
+                    // Initialize UI Manager
+                    this.uiManager = new UIManager();
+
+                    // Create analyzer for visualization
+                    this.analyzer = listener.context.createAnalyser();
+                    this.analyzer.fftSize = 2048;
+
+                    // Create additional gain node for analyzer connection
+                    this.analyzerGain = listener.context.createGain();
+                }
+
+                setupAudioRouting() {
+                    // Connect convolver to gain node
+                    this.convolver.connect(this.reverbGain);
+                    this.reverbGain.connect(this.listener.context.destination);
+
+                    // Connect analyzer chain
+                    this.analyzerGain.connect(this.analyzer);
+                    this.analyzerGain.connect(
+                        this.listener.context.destination,
+                    );
+                }
+
+                async setSound(buffer) {
+                    if (!buffer) {
+                        if (this.sound.isPlaying) {
+                            this.sound.stop();
+                        }
+                        return;
+                    }
+
+                    // Disconnect previous connections if any
+                    try {
+                        this.sound.disconnect();
+                    } catch (e) {
+                        // Ignore disconnection errors
+                    }
+
+                    this.sound.setBuffer(buffer);
+                    this.sound.setLoop(true);
+                    this.sound.setVolume(this.settings?.audio?.volume || 0.5);
+
+                    // Connect to analyzer chain
+                    this.sound.connect(this.analyzerGain);
+                }
+
+                togglePlay() {
+                    if (this.sound && this.sound.buffer) {
+                        if (this.sound.isPlaying) {
+                            this.sound.pause();
+                            this.stopVisualization();
+                        } else {
+                            this.sound.play();
+                            this.startVisualization();
+                        }
+                    }
+                }
+
+                startVisualization() {
+                    if (!this.visualizationActive && this.uiManager) {
+                        this.visualizationActive = true;
+                        this.updateVisualization();
+                    }
+                }
+
+                stopVisualization() {
+                    this.visualizationActive = false;
+                    if (this.uiManager) {
+                        this.uiManager.stopVisualization();
+                    }
+                }
+
+                updateVisualization = () => {
+                    if (!this.visualizationActive) return;
+                    if (this.uiManager) {
+                        this.uiManager.updateVisualizer(this.analyzer);
+                    }
+                    requestAnimationFrame(this.updateVisualization);
+                };
+
+                setVolume(value) {
+                    if (this.sound) {
+                        this.sound.setVolume(value);
+                    }
+                }
+            }
+
+            // Capture & Snapshot
+            class CaptureManager {
+                constructor(renderer, settings) {
+                    this.renderer = renderer;
+                    this.settings = settings;
+                    this.mediaRecorder = null;
+                    this.chunks = [];
+                    this.stream = null;
+                    this.onStatusChange = null; // Callback for status updates
+                }
+                updateStatus(status) {
+                    this.settings.capture.status = status;
+                    if (this.onStatusChange) {
+                        this.onStatusChange(status);
+                    }
+                }
+
+                async startRecording() {
+                    if (this.settings.capture.isRecording) return;
+
+                    try {
+                        this.updateStatus("Starting recording...");
+                        this.stream = this.renderer.domElement.captureStream(
+                            this.settings.capture.frameRate,
+                        );
+
+                        const options = {
+                            mimeType: `video/${this.settings.capture.format}`,
+                            videoBitsPerSecond:
+                                this.settings.capture.quality === "high"
+                                    ? 8000000
+                                    : 2500000,
+                        };
+
+                        this.mediaRecorder = new MediaRecorder(
+                            this.stream,
+                            options,
+                        );
+                        this.chunks = [];
+
+                        this.mediaRecorder.ondataavailable = (event) => {
+                            if (event.data.size > 0) {
+                                this.chunks.push(event.data);
+                            }
+                        };
+
+                        this.mediaRecorder.onstop = () => {
+                            const blob = new Blob(this.chunks, {
+                                type: `video/${this.settings.capture.format}`,
+                            });
+                            const url = URL.createObjectURL(blob);
+
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `capture-${new Date().toISOString()}.${this.settings.capture.format}`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+
+                            URL.revokeObjectURL(url);
+                            this.chunks = [];
+                            this.settings.capture.isRecording = false;
+                            this.updateStatus("Ready");
+                        };
+
+                        this.mediaRecorder.start();
+                        this.settings.capture.isRecording = true;
+                        this.updateStatus("Recording...");
+
+                        setTimeout(() => {
+                            if (
+                                this.mediaRecorder &&
+                                this.mediaRecorder.state === "recording"
+                            ) {
+                                this.stopRecording();
+                            }
+                        }, this.settings.capture.duration * 1000);
+                    } catch (error) {
+                        console.error("Failed to start recording:", error);
+                        this.updateStatus("Recording failed");
+                    }
+                }
+
+                stopRecording() {
+                    if (
+                        this.mediaRecorder &&
+                        this.mediaRecorder.state === "recording"
+                    ) {
+                        this.mediaRecorder.stop();
+                        this.stream
+                            .getTracks()
+                            .forEach((track) => track.stop());
+                        this.updateStatus("Processing...");
+                    }
+                }
+
+                async captureSnapshot() {
+                    return new Promise((resolve) => {
+                        this.renderer.domElement.toBlob(resolve);
+                    });
+                }
+
+                async captureWithCountdown(seconds = 3) {
+                    if (this.settings.capture.isRecording) return;
+
+                    const countdown = document.createElement("div");
+                    countdown.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            font-size: 48px;
+                            color: white;
+                            background: rgba(0,0,0,0.5);
+                            padding: 20px;
+                            border-radius: 10px;
+                            z-index: 1000;
+                        `;
+                    document.body.appendChild(countdown);
+
+                    this.updateStatus("Starting in...");
+                    for (let i = seconds; i > 0; i--) {
+                        countdown.textContent = i;
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000),
+                        );
+                    }
+                    document.body.removeChild(countdown);
+
+                    this.startRecording();
+                }
+            }
+
+            // GUI Manager class for handling all controls
+            class GUIManager {
+                constructor(settings) {
+                    // Initialize GUI
+                    this.gui = new GUI({
+                        width: 300,
+                        autoPlace: true,
+                        closed: false,
+                        resizable: true,
+                    });
+
+                    this.settings = settings;
+                    this.folders = new Map(); // Track folders
+
+                    const gui = this.gui.domElement;
+                    gui.style.height = "auto"; // Let it expand based on content
+                    gui.style.maxHeight = "80vh"; // Maximum height of 80% viewport height
+                    gui.style.minHeight = "200px"; // Minimum height
+                    gui.style.overflowY = "auto"; // Enable scrolling
+                    gui.style.position = "absolute";
+
+                    // Setup core functionality
+                    this.addCustomStyles();
+                    this.setupDraggable(gui);
+                    this.setupHoverEffect(gui);
+                    this.setInitialPosition(gui);
+                    this.setupScrollBehavior(gui);
+                    this.addResizeHandle(gui);
+
+                    // Store component references
+                    this.scene = null;
+                    this.renderer = null;
+                    this.controls = null;
+                    this.splats = null;
+                    this.audioManager = null;
+                    this.gridHelper = null;
+                    this.axesHelper = null;
+                    this.captureManager = null;
+                }
+
+                static get styles() {
+                    return `
+                        .dg.main {
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                            font-size: 11px !important;
+                            text-shadow: none !important;
+                            background: rgba(30, 30, 30, 0.8) !important;
+                            backdrop-filter: blur(10px);
+                            -webkit-backdrop-filter: blur(10px);
+                            border-radius: 8px !important;
+                            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                            position: absolute !important; /* Important for dragging */
+                            transform: translate3d(0, 0, 0); /* Enable hardware acceleration */
+                            z-index: 1000 !important; /* Ensure it's above other elements */
+                            height: auto !important;
+                            min-height: 200px !important;
+                            max-height: 80vh !important;
+                            overflow-y: auto !important;
+                        }
+                        /* Ensure folders are visible */
+                        .dg.main .folder {
+                            height: auto !important;
+                            margin-bottom: 6px !important;
+                        }
+                        /* Ensure folder contents are visible */
+                        .dg.main .folder .folder-contents {
+                            height: auto !important;
+                            overflow: visible !important;
+                        }
+
+                        /* Make sure controls are clickable */
+                        .dg.main .cr {
+                            height: auto !important;
+                            overflow: visible !important;
+                            clear: both !important;
+                        }
+
+                        /* Ensure proper spacing for nested items */
+                        .dg.main .folder .dg {
+                            margin-left: 4px !important;
+                        }
+
+                        /* Make sure the controls are accessible */
+                        .dg.main .property-name {
+                            width: 40% !important;
+                            float: left !important;
+                        }
+
+                        .dg.main .c {
+                            width: 60% !important;
+                            float: right !important;
+                        }
+
+                        .dg .title {
+                            background: rgba(0, 0, 0, 0.2) !important;
+                            font-size: 10px !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                            font-weight: 600;
+                            cursor: move !important; /* Show move cursor on title */
+                            user-select: none !important; /* Prevent text selection while dragging */
+                            padding: 6px 8px !important;
+                        }
+
+                        .dg .cr.function .property-name {
+                            width: 100% !important;
+                        }
+
+                        .dg .c {
+                            padding: 4px 4px 4px 16px !important;
+                        }
+
+                        .dg .c input[type="text"],
+                        .dg .c input[type="number"] {
+                            font-size: 11px !important;
+                            padding: 2px 4px !important;
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                            border-radius: 2px !important;
+                            color: rgba(255, 255, 255, 0.9) !important;
+                        }
+
+                        .dg .c .slider {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            border-radius: 2px !important;
+                            overflow: hidden;
+                        }
+
+                        .dg .c .slider-fg {
+                            background: rgba(145, 200, 255, 0.5) !important;
+                            border-radius: 2px !important;
+                            transition: width 0.1s ease-out;
+                        }
+
+                        .dg .folder .title {
+                            background: rgba(0, 0, 0, 0.3) !important;
+                            padding: 6px 8px !important;
+                        }
+
+                        .dg .closed li.title {
+                            background: rgba(0, 0, 0, 0.2) !important;
+                        }
+
+                        .dg .cr.boolean {
+                            border-left: 3px solid rgba(145, 200, 255, 0.4) !important;
+                        }
+
+                        .dg .cr.number {
+                            border-left: 3px solid rgba(145, 255, 200, 0.4) !important;
+                        }
+
+                        .dg .cr.function {
+                            border-left: 3px solid rgba(255, 145, 200, 0.4) !important;
+                        }
+
+                        /* Hover states */
+                        .dg li:not(.folder):hover {
+                            background: rgba(255, 255, 255, 0.05) !important;
+                        }
+
+                        /* Scrollbar */
+                        .dg .c div::-webkit-scrollbar {
+                            width: 5px;
+                        }
+
+                        .dg .c div::-webkit-scrollbar-track {
+                            background: rgba(0, 0, 0, 0.1);
+                        }
+
+                        .dg .c div::-webkit-scrollbar-thumb {
+                            background: rgba(255, 255, 255, 0.2);
+                            border-radius: 3px;
+                        }
+
+                        /* Color picker */
+                        .dg .c input[type="color"] {
+                            border: none !important;
+                            outline: none !important;
+                            border-radius: 4px !important;
+                            width: 24px !important;
+                            height: 24px !important;
+                            padding: 0 !important;
+                        }
+
+                        /* Tooltip */
+                        .gui-tooltip {
+                            position: fixed;
+                            background: rgba(0, 0, 0, 0.8);
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 11px;
+                            pointer-events: none;
+                            z-index: 9999;
+                            backdrop-filter: blur(4px);
+                            -webkit-backdrop-filter: blur(4px);
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            max-width: 200px;
+                        }
+
+                        /* Save row */
+                        .dg .save-row {
+                            padding: 0 !important;
+                        }
+
+                        .dg .save-row select {
+                            font-size: 11px !important;
+                            margin: 4px !important;
+                        }
+
+                        /* Close button */
+                        .dg .close-button {
+                            font-size: 10px !important;
+                            background: rgba(0, 0, 0, 0.2) !important;
+                        }
+
+                        /* Ensure proper spacing */
+                        .dg li:not(.folder) {
+                            padding: 4px 4px 4px 16px !important;
+                            background: rgba(0, 0, 0, 0.1) !important;
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+                        }
+
+                        /* Transition for folders */
+                        .dg.main .folder {
+                            transition: height 0.1s ease-in-out;
+                        }
+
+                        .dg.main {
+                            max-height: 80vh !important; /* Limit height to 80% of viewport height */
+                            overflow-y: auto !important; /* Enable vertical scrolling */
+                            overflow-x: hidden !important; /* Prevent horizontal scrolling */
+                            scrollbar-width: thin; /* For Firefox */
+                            scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1); /* For Firefox */
+                        }
+
+                        .dg.main::-webkit-scrollbar {
+                            width: 6px !important;
+                        }
+
+                        .dg.main::-webkit-scrollbar-track {
+                            background: rgba(0, 0, 0, 0.1) !important;
+                            border-radius: 3px !important;
+                        }
+
+                        .dg.main::-webkit-scrollbar-thumb {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            border-radius: 3px !important;
+                            transition: background 0.2s ease;
+                        }
+
+                        .dg.main::-webkit-scrollbar-thumb:hover {
+                            background: rgba(255, 255, 255, 0.3) !important;
+                        }
+
+                        .dg .folder .dg.main {
+                            max-height: 50vh !important; /* Limit folder height */
+                        }
+
+                        .dg.main > ul {
+                            padding-right: 8px !important;
+                        }
+
+                        .dg .folder {
+                            overflow: hidden !important;
+                        }
+
+                        .dg .property-name {
+                            position: sticky !important;
+                            left: 0 !important;
+                            background: inherit !important;
+                        }
+
+                        .dg .folder .title {
+                            position: sticky !important;
+                            top: 0 !important;
+                            z-index: 2 !important;
+                            background: rgba(0, 0, 0, 0.3) !important;
+                        }
+
+                        .dg.main::after {
+                            content: '';
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            height: 20px;
+                            background: linear-gradient(
+                                to top,
+                                rgba(0, 0, 0, 0.2),
+                                transparent
+                            );
+                            pointer-events: none;
+                            opacity: 0;
+                            transition: opacity 0.2s ease;
+                        }
+
+                        .dg.main.scrollable::after {
+                            opacity: 1;
+                        }
+
+                        .hdri-loading {
+                            padding: 8px;
+                            text-align: center;
+                            color: #fff;
+                            background: rgba(0,0,0,0.2);
+                            border-radius: 4px;
+                            margin: 8px;
+                            font-size: 11px;
+                        }
+
+                        .env-loading-progress {
+                            margin: 8px;
+                            background: rgba(0,0,0,0.2);
+                            border-radius: 4px;
+                            overflow: hidden;
+                            height: 4px;
+                        }
+
+                        .progress-bar {
+                            width: 0%;
+                            height: 100%;
+                            background: linear-gradient(90deg,
+                                rgba(145, 200, 255, 0.5),
+                                rgba(145, 200, 255, 0.8)
+                            );
+                            transition: width 0.3s ease;
+                        }
+                        .gui-notification {
+                            position: fixed;
+                            bottom: 20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            padding: 10px 20px;
+                            border-radius: 4px;
+                            background: rgba(0,0,0,0.8);
+                            color: white;
+                            font-size: 12px;
+                            z-index: 10000;
+                            animation: notificationFade 3s forwards;
+                        }
+
+                        .gui-notification.error {
+                            background: rgba(255,0,0,0.8);
+                        }
+
+                        @keyframes notificationFade {
+                            0% { opacity: 0; transform: translate(-50%, 20px); }
+                            10% { opacity: 1; transform: translate(-50%, 0); }
+                            90% { opacity: 1; transform: translate(-50%, 0); }
+                            100% { opacity: 0; transform: translate(-50%, -20px); }
+                        }
+                        /* Resize handle styles */
+                        .resize-handle {
+                            opacity: 0.5;
+                            transition: opacity 0.2s ease;
+                        }
+
+                        .resize-handle:hover {
+                            opacity: 1;
+                        }
+
+                        /* Active state for controls */
+                        .dg .cr.active {
+                            background: rgba(145, 200, 255, 0.1) !important;
+                        }
+
+                        /* Button styles */
+                        .dg .cr.function:hover {
+                            background: rgba(255, 145, 200, 0.1) !important;
+                        }
+
+                        /* Disabled state */
+                        .dg .cr.disabled {
+                            opacity: 0.5;
+                            pointer-events: none;
+                        }
+
+                        /* Loading state */
+                        .dg .cr.loading {
+                            position: relative;
+                            pointer-events: none;
+                        }
+
+                        .dg .cr.loading::after {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background: rgba(0, 0, 0, 0.2);
+                            backdrop-filter: blur(2px);
+                        }
+
+                        /* Folder section separators */
+                        .dg .folder-separator {
+                            height: 1px;
+                            background: rgba(255, 255, 255, 0.1);
+                            margin: 8px 0;
+                        }
+                    `;
+                }
+
+                initialize(
+                    scene,
+                    resourceManager,
+                    renderer,
+                    splats,
+                    controls,
+                    audioManager,
+                    gridHelper,
+                    axesHelper,
+                    captureManager,
+                ) {
+                    try {
+                        if (!scene || !renderer) {
+                            throw new Error("Scene and renderer are required");
+                        }
+
+                        // Store component references
+                        this.scene = scene;
+                        this.renderer = renderer;
+                        this.controls = controls;
+                        this.splats = splats;
+                        this.audioManager = audioManager;
+                        this.gridHelper = gridHelper;
+                        this.axesHelper = axesHelper;
+                        this.captureManager = captureManager;
+
+                        // Setup all controls
+                        this.setupEnvironmentControls(
+                            scene,
+                            resourceManager,
+                            renderer,
+                        );
+                        this.setupCameraControls(controls);
+
+                        if (audioManager && resourceManager) {
+                            this.setupAudioControls(
+                                audioManager,
+                                resourceManager,
+                            );
+                        }
+
+                        if (captureManager) {
+                            this.setupCaptureControls(captureManager);
+                        }
+
+                        if (gridHelper && axesHelper) {
+                            this.setupDebugControls(gridHelper, axesHelper);
+                        }
+
+                        if (splats) {
+                            this.setupSplatsControls(splats, renderer, scene);
+                        }
+
+                        // Setup event listeners
+                        this.setupEventListeners();
+
+                        this.gui.updateDisplay();
+                    } catch (error) {
+                        console.error("Failed to initialize GUI:", error);
+                        this.showNotification(
+                            "Failed to initialize GUI",
+                            "error",
+                        );
+                    }
+                }
+                // Event Listeners Setup
+                setupEventListeners() {
+                    const handleKeydown = (event) => {
+                        switch (event.key) {
+                            case " ":
+                                if (this.audioManager) {
+                                    this.audioManager.togglePlay();
+                                }
+                                break;
+                            case "f":
+                                this.toggleFullscreen();
+                                break;
+                            case "g":
+                                if (this.gridHelper) {
+                                    this.settings.debug.showGrid =
+                                        !this.settings.debug.showGrid;
+                                    this.gridHelper.visible =
+                                        this.settings.debug.showGrid;
+                                    this.gui.updateDisplay();
+                                }
+                                break;
+                            case "a":
+                                if (this.axesHelper) {
+                                    this.settings.debug.showAxes =
+                                        !this.settings.debug.showAxes;
+                                    this.axesHelper.visible =
+                                        this.settings.debug.showAxes;
+                                    this.gui.updateDisplay();
+                                }
+                                break;
+                            case "c":
+                                if (this.captureManager) {
+                                    this.captureManager.captureWithCountdown(3);
+                                }
+                                break;
+                        }
+                    };
+
+                    window.addEventListener("keydown", handleKeydown);
+
+                    // Store for cleanup
+                    this._cleanupListeners = (
+                        this._cleanupListeners || (() => {})
+                    ).bind(this);
+                    const previousCleanup = this._cleanupListeners;
+                    this._cleanupListeners = () => {
+                        previousCleanup();
+                        window.removeEventListener("keydown", handleKeydown);
+                    };
+                }
+                toggleFullscreen() {
+                    try {
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen();
+                        } else if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                    } catch (error) {
+                        console.error("Failed to toggle fullscreen:", error);
+                        this.showNotification(
+                            "Failed to toggle fullscreen",
+                            "error",
+                        );
+                    }
+                }
+                setupDraggable(gui) {
+                    let isDragging = false;
+                    let currentX;
+                    let currentY;
+                    let initialX;
+                    let initialY;
+
+                    const handleMouseDown = (e) => {
+                        if (e.target.classList.contains("title")) {
+                            isDragging = true;
+                            initialX = e.clientX - gui.offsetLeft;
+                            initialY = e.clientY - gui.offsetTop;
+                            e.preventDefault();
+                        }
+                    };
+
+                    const handleMouseMove = (e) => {
+                        if (isDragging) {
+                            e.preventDefault();
+                            currentX = e.clientX - initialX;
+                            currentY = e.clientY - initialY;
+
+                            currentX = Math.max(
+                                0,
+                                Math.min(
+                                    currentX,
+                                    window.innerWidth - gui.offsetWidth,
+                                ),
+                            );
+                            currentY = Math.max(
+                                0,
+                                Math.min(
+                                    currentY,
+                                    window.innerHeight - gui.offsetHeight,
+                                ),
+                            );
+
+                            gui.style.left = `${currentX}px`;
+                            gui.style.top = `${currentY}px`;
+                        }
+                    };
+
+                    const handleMouseUp = () => {
+                        isDragging = false;
+                    };
+
+                    gui.addEventListener("mousedown", handleMouseDown);
+                    document.addEventListener("mousemove", handleMouseMove);
+                    document.addEventListener("mouseup", handleMouseUp);
+
+                    // Store references for cleanup
+                    this._cleanupListeners = () => {
+                        gui.removeEventListener("mousedown", handleMouseDown);
+                        document.removeEventListener(
+                            "mousemove",
+                            handleMouseMove,
+                        );
+                        document.removeEventListener("mouseup", handleMouseUp);
+                    };
+                }
+                setupHoverEffect(gui) {
+                    const handleMouseEnter = () => (gui.style.opacity = "1");
+                    const handleMouseLeave = () => (gui.style.opacity = "0.9");
+
+                    gui.addEventListener("mouseenter", handleMouseEnter);
+                    gui.addEventListener("mouseleave", handleMouseLeave);
+
+                    // Add to cleanup
+                    this._cleanupListeners = (
+                        this._cleanupListeners || (() => {})
+                    ).bind(this);
+                    const previousCleanup = this._cleanupListeners;
+                    this._cleanupListeners = () => {
+                        previousCleanup();
+                        gui.removeEventListener("mouseenter", handleMouseEnter);
+                        gui.removeEventListener("mouseleave", handleMouseLeave);
+                    };
+                }
+
+                setupScrollBehavior(gui) {
+                    const container = gui;
+
+                    // Function to check if content is scrollable
+                    const checkScrollable = () => {
+                        const isScrollable =
+                            container.scrollHeight > container.clientHeight;
+                        container.classList.toggle("scrollable", isScrollable);
+                    };
+
+                    // Check on initial load
+                    checkScrollable();
+
+                    // Check when content changes
+                    const observer = new MutationObserver(checkScrollable);
+                    observer.observe(container, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ["style", "class"],
+                    });
+
+                    // Check on window resize
+                    window.addEventListener("resize", checkScrollable);
+
+                    // Store cleanup function
+                    const previousCleanup =
+                        this._cleanupListeners || (() => {});
+                    this._cleanupListeners = () => {
+                        previousCleanup();
+                        observer.disconnect();
+                        window.removeEventListener("resize", checkScrollable);
+                    };
+                }
+
+                setInitialPosition(gui) {
+                    gui.style.position = "absolute";
+                    gui.style.left = "20px";
+                    gui.style.top = "20px";
+                    gui.style.opacity = "0.9";
+                    gui.style.transition = "opacity 0.3s ease";
+                }
+
+                addResizeHandle(gui) {
+                    const handle = document.createElement("div");
+                    handle.className = "resize-handle";
+                    handle.style.cssText = `
+                          position: absolute;
+                          bottom: 0;
+                          right: 0;
+                          width: 10px;
+                          height: 10px;
+                          cursor: se-resize;
+                          background: linear-gradient(
+                              135deg,
+                              transparent 50%,
+                              rgba(255, 255, 255, 0.2) 50%
+                          );
+                      `;
+
+                    let isResizing = false;
+                    let initialWidth;
+                    let initialHeight;
+                    let initialX;
+                    let initialY;
+
+                    handle.addEventListener("mousedown", (e) => {
+                        isResizing = true;
+                        initialWidth = gui.offsetWidth;
+                        initialHeight = gui.offsetHeight;
+                        initialX = e.clientX;
+                        initialY = e.clientY;
+                        e.stopPropagation();
+                    });
+
+                    document.addEventListener("mousemove", (e) => {
+                        if (!isResizing) return;
+
+                        const deltaX = e.clientX - initialX;
+                        const deltaY = e.clientY - initialY;
+
+                        const newWidth = Math.max(200, initialWidth + deltaX);
+                        const newHeight = Math.max(100, initialHeight + deltaY);
+
+                        gui.style.width = `${newWidth}px`;
+                        gui.style.height = `${newHeight}px`;
+                    });
+
+                    document.addEventListener("mouseup", () => {
+                        isResizing = false;
+                    });
+
+                    gui.appendChild(handle);
+                }
+
+                // Utility Methods
+                createStyledFolder(name) {
+                    if (this.folders.has(name)) {
+                        return this.folders.get(name);
+                    }
+
+                    const folder = this.gui.addFolder(name);
+                    folder.domElement.style.marginTop = "5px";
+                    this.folders.set(name, folder);
+                    return folder;
+                }
+
+                addTooltip(controller, text) {
+                    const tooltip = document.createElement("div");
+                    tooltip.className = "gui-tooltip";
+                    tooltip.textContent = text;
+
+                    controller.domElement.addEventListener("mouseenter", () => {
+                        document.body.appendChild(tooltip);
+                        const rect =
+                            controller.domElement.getBoundingClientRect();
+                        tooltip.style.left = rect.right + 10 + "px";
+                        tooltip.style.top = rect.top + "px";
+                    });
+
+                    controller.domElement.addEventListener("mouseleave", () => {
+                        if (tooltip.parentElement) {
+                            document.body.removeChild(tooltip);
+                        }
+                    });
+                }
+
+                createStyledController(folder, object, property, ...args) {
+                    const controller = folder.add(object, property, ...args);
+                    controller.domElement.style.marginBottom = "2px";
+                    return controller;
+                }
+
+                addSeparator(folder) {
+                    const separator = document.createElement("div");
+                    separator.style.height = "1px";
+                    separator.style.background = "rgba(255, 255, 255, 0.1)";
+                    separator.style.margin = "8px 0";
+                    folder.domElement.appendChild(separator);
+                }
+
+                showNotification(message, type = "info") {
+                    const notification = document.createElement("div");
+                    notification.className = `gui-notification ${type}`;
+                    notification.textContent = message;
+
+                    document.body.appendChild(notification);
+
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 3000);
+                }
+
+                addCustomStyles() {
+                    const style = document.createElement("style");
+                    style.textContent = GUIManager.styles;
+                    document.head.appendChild(style);
+                }
+                setupEnvironmentControls(scene, resourceManager, renderer) {
+                    const envFolder =
+                        this.createStyledFolder("Visual Environment");
+                    envFolder.domElement.classList.add("environment-folder");
+
+                    // Loading indicator
+                    const loadingDiv = document.createElement("div");
+                    loadingDiv.style.display = "none";
+                    loadingDiv.className = "hdri-loading";
+                    loadingDiv.textContent = "Loading HDRI...";
+                    envFolder.domElement.appendChild(loadingDiv);
+
+                    // Progress bar
+                    const progressContainer = document.createElement("div");
+                    progressContainer.className = "env-loading-progress";
+                    progressContainer.style.display = "none";
+                    const progressBar = document.createElement("div");
+                    progressBar.className = "progress-bar";
+                    progressContainer.appendChild(progressBar);
+                    envFolder.domElement.appendChild(progressContainer);
+
+                    // Environment preset
+                    const presetController = this.createStyledController(
+                        envFolder,
+                        this.settings.environment,
+                        "preset",
+                        Object.keys(PRESETS.environment),
+                    ).onChange(async (value) => {
+                        try {
+                            loadingDiv.style.display = "block";
+                            const envMap = await resourceManager.loadHDRI(
+                                PRESETS.environment[value],
+                            );
+                            if (value === "none") {
+                                scene.environment = null;
+                                scene.background = scene.fog.color;
+                            } else {
+                                scene.environment = envMap;
+                                scene.background = envMap;
+                            }
+                        } catch (error) {
+                            console.error("Failed to load environment:", error);
+                            this.showNotification(
+                                "Failed to load environment",
+                                "error",
+                            );
+                        } finally {
+                            loadingDiv.style.display = "none";
+                        }
+                    });
+
+                    this.addTooltip(
+                        presetController,
+                        "Choose from different environment presets",
+                    );
+
+                    // Environment controls
+                    const envControlsFolder = this.createStyledFolder(
+                        "Environment Controls",
+                    );
+                    envFolder.addFolder(envControlsFolder);
+
+                    this.createStyledController(
+                        envControlsFolder,
+                        this.settings.environment,
+                        "intensity",
+                        0,
+                        2,
+                    ).onChange((value) => {
+                        scene.backgroundIntensity = value;
+                    });
+
+                    this.createStyledController(
+                        envControlsFolder,
+                        this.settings.environment,
+                        "rotation",
+                        0,
+                        360,
+                    ).onChange((value) => {
+                        scene.rotation.y = value * (Math.PI / 180);
+                    });
+
+                    this.createStyledController(
+                        envControlsFolder,
+                        this.settings.environment,
+                        "exposure",
+                        0,
+                        2,
+                    ).onChange((value) => {
+                        renderer.toneMappingExposure = value;
+                    });
+
+                    // Fog controls
+                    const fogFolder = this.createStyledFolder("Fog");
+                    envFolder.addFolder(fogFolder);
+
+                    this.createStyledController(
+                        fogFolder,
+                        this.settings.environment.fog,
+                        "enabled",
+                    ).onChange((value) => {
+                        scene.fog.enabled = value;
+                    });
+
+                    this.createStyledController(
+                        fogFolder,
+                        this.settings.environment.fog,
+                        "density",
+                        0,
+                        1,
+                        0.01,
+                    ).onChange((value) => {
+                        scene.fog.density = value;
+                    });
+
+                    fogFolder
+                        .addColor(this.settings.environment.fog, "color")
+                        .onChange((value) => {
+                            scene.fog.color = new Color(
+                                value,
+                            ).convertLinearToSRGB();
+                        });
+
+                    return envFolder;
+                }
+
+                setupCameraControls(controls) {
+                    const cameraFolder =
+                        this.createStyledFolder("Camera Controls");
+
+                    // Basic controls
+                    this.createStyledController(
+                        cameraFolder,
+                        this.settings.camera.controls,
+                        "enableDamping",
+                    ).onChange((value) => {
+                        controls.enableDamping = value;
+                    });
+
+                    this.createStyledController(
+                        cameraFolder,
+                        this.settings.camera.controls,
+                        "enableZoom",
+                    ).onChange((value) => {
+                        controls.enableZoom = value;
+                    });
+
+                    this.createStyledController(
+                        cameraFolder,
+                        this.settings.camera.controls,
+                        "enableRotate",
+                    ).onChange((value) => {
+                        controls.enableRotate = value;
+                    });
+
+                    this.createStyledController(
+                        cameraFolder,
+                        this.settings.camera.controls,
+                        "autoRotate",
+                    ).onChange((value) => {
+                        controls.autoRotate = value;
+                    });
+
+                    // Speed controls
+                    const speedFolder =
+                        cameraFolder.addFolder("Speed Settings");
+
+                    this.createStyledController(
+                        speedFolder,
+                        this.settings.camera.controls,
+                        "dampingFactor",
+                        0.01,
+                        0.5,
+                    ).onChange((value) => {
+                        controls.dampingFactor = value;
+                    });
+
+                    this.createStyledController(
+                        speedFolder,
+                        this.settings.camera.controls,
+                        "autoRotateSpeed",
+                        -10,
+                        10,
+                    ).onChange((value) => {
+                        controls.autoRotateSpeed = value;
+                    });
+
+                    this.createStyledController(
+                        speedFolder,
+                        this.settings.camera.controls,
+                        "zoomSpeed",
+                        0.1,
+                        5,
+                    ).onChange((value) => {
+                        controls.zoomSpeed = value;
+                    });
+
+                    this.createStyledController(
+                        speedFolder,
+                        this.settings.camera.controls,
+                        "rotateSpeed",
+                        0.1,
+                        5,
+                    ).onChange((value) => {
+                        controls.rotateSpeed = value;
+                    });
+
+                    return cameraFolder;
+                }
+
+                setupAudioControls(audioManager, resourceManager) {
+                    const audioFolder = this.createStyledFolder("Audio");
+
+                    this.createStyledController(
+                        audioFolder,
+                        this.settings.audio,
+                        "enabled",
+                    ).onChange((value) => {
+                        if (audioManager.sound.buffer) {
+                            value
+                                ? audioManager.sound.play()
+                                : audioManager.sound.pause();
+                        }
+                    });
+
+                    this.createStyledController(
+                        audioFolder,
+                        this.settings.audio,
+                        "volume",
+                        0,
+                        1,
+                        0.1,
+                    ).onChange((value) => {
+                        audioManager.sound.setVolume(value);
+                    });
+
+                    this.createStyledController(
+                        audioFolder,
+                        this.settings.audio,
+                        "preset",
+                        Object.keys(PRESETS.audio),
+                    ).onChange(async (value) => {
+                        try {
+                            const buffer = await resourceManager.loadAudio(
+                                PRESETS.audio[value],
+                            );
+                            await audioManager.setSound(buffer);
+                        } catch (error) {
+                            console.error("Failed to load audio:", error);
+                            this.showNotification(
+                                "Failed to load audio",
+                                "error",
+                            );
+                        }
+                    });
+
+                    return audioFolder;
+                }
+
+                setupCaptureControls(captureManager) {
+                    const captureFolder = this.createStyledFolder("Capture");
+
+                    this.createStyledController(
+                        captureFolder,
+                        this.settings.capture,
+                        "format",
+                        ["webm", "mp4"],
+                    );
+                    this.createStyledController(
+                        captureFolder,
+                        this.settings.capture,
+                        "quality",
+                        ["high", "medium"],
+                    );
+                    this.createStyledController(
+                        captureFolder,
+                        this.settings.capture,
+                        "frameRate",
+                        [30, 60],
+                    );
+                    this.createStyledController(
+                        captureFolder,
+                        this.settings.capture,
+                        "duration",
+                        5,
+                        60,
+                    ).step(1);
+
+                    captureFolder
+                        .add(
+                            {
+                                capture: () => {
+                                    if (!this.settings.capture.isRecording) {
+                                        captureManager.startRecording();
+                                    } else {
+                                        captureManager.stopRecording();
+                                    }
+                                    this.gui.updateDisplay();
+                                },
+                            },
+                            "capture",
+                        )
+                        .name(() =>
+                            this.settings.capture.isRecording
+                                ? "Stop Recording"
+                                : "Start Recording",
+                        );
+
+                    return captureFolder;
+                }
+
+                setupDebugControls(gridHelper, axesHelper) {
+                    const debugFolder = this.createStyledFolder("Debug");
+
+                    this.createStyledController(
+                        debugFolder,
+                        this.settings.debug,
+                        "showGrid",
+                    ).onChange((value) => {
+                        gridHelper.visible = value;
+                    });
+
+                    this.createStyledController(
+                        debugFolder,
+                        this.settings.debug,
+                        "showAxes",
+                    ).onChange((value) => {
+                        axesHelper.visible = value;
+                    });
+
+                    return debugFolder;
+                }
+
+                // dispose() {
+                //     if (this._cleanupListeners) {
+                //         this._cleanupListeners();
+                //     }
+                //     if (this.gui) {
+                //         this.gui.destroy();
+                //     }
+                //     // Clear all references
+                //     this.scene = null;
+                //     this.renderer = null;
+                //     this.controls = null;
+                //     this.splats = null;
+                //     this.audioManager = null;
+                //     this.gridHelper = null;
+                //     this.axesHelper = null;
+                //     this.captureManager = null;
+                //     this.folders.clear();
+                //}
+            }
+
+            // Scene Manager class for handling the 3D scene
+            class SceneManager {
+                constructor() {
+                    this.setupRenderer();
+                    this.setupScene();
+                    this.setupCamera();
+                    this.setupAudio();
+                    this.setupControls();
+                    this.setupHelpers();
+                    this.captureManager = new CaptureManager(
+                        this.renderer,
+                        settings,
+                    );
+                    this.resourceManager = new ResourceManager(this.renderer);
+                    this.guiManager = new GUIManager(settings);
+                    this.setupAudioControls(); // Add this line
+
+                    // Initialize GUI only after content is loaded
+                    this.loadInitialContent().then(() => {
+                        this.guiManager.initialize(
+                            this.scene,
+                            this.resourceManager,
+                            this.renderer,
+                            this.splats,
+                            this.controls,
+                            this.audioManager,
+                            this.gridHelper,
+                            this.axesHelper,
+                            this.captureManager,
+                        );
+                    });
+
+                    this.setupResizeHandler();
+                }
+
+                async loadInitialContent() {
+                    // Add Luma splats
+                    this.splats = new LumaSplatsThree({
+                        source: "https://lumalabs.ai/capture/5be32ec6-b11f-44eb-bbb7-57c5beee0d75",
+                        particleRevealEnabled: true,
+                        loadingAnimationEnabled: false,
+                        settings: {
+                            shader: { fog: true },
+                        },
+                    });
+
+                    // Add initial camera transform handler
+                    this.splats.onInitialCameraTransform = (transform) => {
+                        this.camera.matrix.copy(transform);
+                        this.camera.matrix.decompose(
+                            this.camera.position,
+                            this.camera.quaternion,
+                            this.camera.scale,
+                        );
+                        this.camera.updateMatrixWorld();
+                    };
+
+                    // Add load handler with environment mapping
+                    this.splats.addEventListener("load", async () => {
+                        // Material setup
+                        if (this.splats.material) {
+                            this.splats.material.fog = true;
+                            this.splats.material.defines =
+                                this.splats.material.defines || {};
+                            this.splats.material.defines.USE_FOG = "";
+                            this.splats.material.defines.FOG_EXP2 = "";
+                            this.splats.material.needsUpdate = true;
+                        }
+
+                        // Generate and set environment map
+                        try {
+                            const environmentMap =
+                                await this.splats.captureCubemap(this.renderer);
+                            this.scene.environment = environmentMap;
+
+                            // Add environment probes if EnvironmentProbes class is available
+                            if (typeof EnvironmentProbes !== "undefined") {
+                                const environmentProbes = new EnvironmentProbes(
+                                    4,
+                                );
+                                environmentProbes.position.set(-3, 1, 0.25);
+                                environmentProbes.rotation.y = Math.PI / 2;
+                                environmentProbes.scale.setScalar(3);
+                                this.scene.add(environmentProbes);
+                            }
+                        } catch (error) {
+                            console.warn("Environment mapping failed:", error);
+                        }
+                    });
+
+                    this.scene.add(this.splats);
+
+                    // Wait for audio context to be ready
+                    if (this.listener?.context?.state === "suspended") {
+                        await this.listener.context.resume();
+                    }
+
+                    // Initialize GUI after content is loaded
+                    this.guiManager.initialize(
+                        this.scene,
+                        this.resourceManager,
+                        this.renderer,
+                        this.splats,
+                        this.controls,
+                        this.audioManager,
+                        this.gridHelper,
+                        this.axesHelper,
+                        this.captureManager,
+                    );
+
+                    // Load initial audio only after GUI is initialized
+                    if (this.audioManager && this.listener.context) {
+                        try {
+                            const buffer = await this.resourceManager.loadAudio(
+                                PRESETS.audio.murmur,
+                            );
+                            if (buffer) {
+                                await this.audioManager.setSound(buffer);
+                                if (this.settings.audio.enabled) {
+                                    this.audioManager.sound.play();
+                                    if (this.audioManager.startVisualization) {
+                                        this.audioManager.startVisualization();
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.warn(
+                                "Failed to load initial audio:",
+                                error,
+                            );
+                        }
+                    }
+                }
+                catch(error) {
+                    console.error("Failed to load initial content:", error);
+                }
+
+                setupRenderer() {
+                    this.renderer = new WebGLRenderer({
+                        antialias: false,
+                        alpha: true,
+                        transparent: true,
+                        premultipliedAlpha: true,
+                        logarithmicDepthBuffer: true,
+                    });
+                    this.renderer.setClearColor(new Color(0x333333));
+                    this.renderer.toneMapping = ACESFilmicToneMapping;
+                    this.renderer.toneMappingExposure =
+                        settings.environment.exposure;
+                    this.renderer.outputColorSpace = "srgb";
+                    // Set initial size to window dimensions
+                    this.renderer.setSize(
+                        window.innerWidth,
+                        window.innerHeight,
+                    );
+                    // Set pixel ratio (but cap it to avoid performance issues on high-DPI devices)
+                    this.renderer.setPixelRatio(
+                        Math.min(window.devicePixelRatio, 2),
+                    );
+
+                    document.body.appendChild(this.renderer.domElement);
+                }
+
+                setupScene() {
+                    this.scene = new Scene();
+                    this.scene.fog = new FogExp2(
+                        new Color(
+                            settings.environment.fog.color,
+                        ).convertLinearToSRGB(),
+                        settings.environment.fog.density,
+                    );
+                }
+
+                setupCamera() {
+                    const fov = 50;
+                    const aspect = window.innerWidth / window.innerHeight;
+                    const near = 0.1;
+                    const far = 1000;
+
+                    this.camera = new PerspectiveCamera(fov, aspect, near, far);
+                    this.camera.position.set(0, 2, 2);
+                    this.listener = new AudioListener();
+                    this.camera.add(this.listener);
+                }
+
+                setupAudio() {
+                    // Create AudioListener after the camera is set up
+                    this.listener = new AudioListener();
+                    this.camera.add(this.listener);
+
+                    // Wait for the audio context to be initialized
+                    if (this.listener.context.state === "suspended") {
+                        this.listener.context.resume();
+                    }
+
+                    // Initialize AudioManager after listener is ready
+                    this.audioManager = new AudioManager(this.listener);
+                }
+
+                setupAudioControls() {
+                    const playPauseBtn = document.querySelector(".play-pause");
+                    const volumeControl = document.querySelector(
+                        ".volume-control input",
+                    );
+
+                    if (playPauseBtn && this.audioManager) {
+                        playPauseBtn.addEventListener("click", () => {
+                            this.audioManager.togglePlay();
+                            const icon = playPauseBtn.querySelector(".icon");
+                            if (icon) {
+                                icon.textContent = this.audioManager.sound
+                                    .isPlaying
+                                    ? "⏸"
+                                    : "▶";
+                            }
+                        });
+                    }
+
+                    if (volumeControl && this.audioManager) {
+                        volumeControl.value = settings.audio.volume * 100;
+                        volumeControl.addEventListener("input", (e) => {
+                            const volume = e.target.value / 100;
+                            this.audioManager.setVolume(volume);
+                            settings.audio.volume = volume;
+                        });
+                    }
+                }
+
+                setupControls() {
+                    this.controls = new OrbitControls(
+                        this.camera,
+                        this.renderer.domElement,
+                    );
+                    Object.assign(this.controls, settings.camera.controls);
+                    const limits = settings.camera.controls.limits;
+                    Object.entries(limits).forEach(([key, value]) => {
+                        if (key.includes("Angle")) {
+                            this.controls[key] = value * (Math.PI / 180);
+                        } else {
+                            this.controls[key] = value;
+                        }
+                    });
+                }
+
+                setupHelpers() {
+                    this.gridHelper = new GridHelper(10, 10);
+                    this.axesHelper = new AxesHelper(5);
+                    this.scene.add(this.gridHelper, this.axesHelper);
+                    this.gridHelper.visible = settings.debug.showGrid;
+                    this.axesHelper.visible = settings.debug.showAxes;
+                }
+
+                setupGUI() {
+                    this.guiManager.setupEnvironmentControls(
+                        this.scene,
+                        this.resourceManager,
+                    );
+                    this.guiManager.setupCameraControls(this.controls);
+
+                    // Only setup audio controls when AudioManager is ready
+                    if (this.audioManager) {
+                        this.guiManager.setupAudioControls(this.audioManager);
+                    }
+
+                    this.guiManager.setupDebugControls(
+                        this.gridHelper,
+                        this.axesHelper,
+                    );
+                }
+
+                setupResizeHandler() {
+                    const handleResize = () => {
+                        // Update camera
+                        this.camera.aspect =
+                            window.innerWidth / window.innerHeight;
+                        this.camera.updateProjectionMatrix();
+
+                        // Update renderer
+                        this.renderer.setSize(
+                            window.innerWidth,
+                            window.innerHeight,
+                        );
+                        // Maintain pixel ratio on resize
+                        this.renderer.setPixelRatio(
+                            Math.min(window.devicePixelRatio, 2),
+                        );
+                    };
+
+                    window.addEventListener("resize", handleResize);
+                    // Initial call to set correct sizes
+                    handleResize();
+                }
+
+                animate() {
+                    this.controls.update();
+
+                    if (this.splats.material?.needsUpdate) {
+                        this.splats.material.needsUpdate = false;
+                    }
+
+                    this.renderer.render(this.scene, this.camera);
+                }
+
+                dispose() {
+                    // Dispose of splats
+                    if (this.splats) {
+                        this.splats.dispose();
+                    }
+
+                    // Clean up audio
+                    if (this.audioManager) {
+                        if (this.audioManager.sound) {
+                            this.audioManager.sound.stop();
+                            this.audioManager.sound.disconnect();
+                        }
+                        if (this.audioManager.convolver) {
+                            this.audioManager.convolver.disconnect();
+                        }
+                        if (this.audioManager.reverbGain) {
+                            this.audioManager.reverbGain.disconnect();
+                        }
+                    }
+
+                    // Clean up capture resources
+                    if (this.captureManager) {
+                        if (
+                            this.captureManager.mediaRecorder &&
+                            this.captureManager.mediaRecorder.state ===
+                                "recording"
+                        ) {
+                            this.captureManager.stopRecording();
+                        }
+                        if (this.captureManager.stream) {
+                            this.captureManager.stream
+                                .getTracks()
+                                .forEach((track) => track.stop());
+                        }
+                    }
+
+                    // Remove event listeners
+                    window.removeEventListener("resize", this.handleResize);
+                    window.removeEventListener("beforeunload", this.dispose);
+
+                    // Dispose of controls
+                    if (this.controls) {
+                        this.controls.dispose();
+                    }
+
+                    // Dispose of scene objects
+                    if (this.scene) {
+                        this.scene.traverse((object) => {
+                            if (object.geometry) {
+                                object.geometry.dispose();
+                            }
+                            if (object.material) {
+                                if (Array.isArray(object.material)) {
+                                    object.material.forEach((material) =>
+                                        material.dispose(),
+                                    );
+                                } else {
+                                    object.material.dispose();
+                                }
+                            }
+                        });
+                    }
+
+                    // Dispose of helpers
+                    if (this.gridHelper) {
+                        this.gridHelper.geometry.dispose();
+                        if (this.gridHelper.material) {
+                            this.gridHelper.material.dispose();
+                        }
+                    }
+                    if (this.axesHelper) {
+                        this.axesHelper.geometry.dispose();
+                        if (this.axesHelper.material) {
+                            this.axesHelper.material.dispose();
+                        }
+                    }
+
+                    // Dispose of renderer
+                    if (this.renderer) {
+                        this.renderer.dispose();
+                        this.renderer.forceContextLoss();
+                        this.renderer.domElement.remove();
+                    }
+
+                    // Clean up GUI
+                    if (this.guiManager && this.guiManager.gui) {
+                        this.guiManager.gui.destroy();
+                    }
+                    // Clear any stored references
+                    this.scene = null;
+                    this.camera = null;
+                    this.renderer = null;
+                    this.controls = null;
+                    this.splats = null;
+                    this.audioManager = null;
+                    this.captureManager = null;
+                    this.gridHelper = null;
+                    this.axesHelper = null;
+                    this.guiManager = null;
+                }
+            }
+
+            // Initialize and start the application
+            const sceneManager = new SceneManager();
+
+            sceneManager.renderer.setAnimationLoop(() =>
+                sceneManager.animate(),
+            );
+
+            // Add cleanup handling
+            window.addEventListener("beforeunload", () => {
+                sceneManager.dispose();
+            });
+        </script>
+    </body>
+</html>
