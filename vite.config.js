@@ -20,15 +20,18 @@ export default defineConfig({
       "@managers": resolve(__dirname, "./src/core/managers"),
       "@generators": resolve(__dirname, "./src/core/generators"),
       "@scenes": resolve(__dirname, "./src/core/scenes"),
-      "@utils": resolve(__dirname, "./src/core/utils"),
+      "@utils": resolve(__dirname, "./src/utils"),
+      "@gui": resolve(__dirname, "./src/gui"),
+
       // Components sub-directories
       "@encoders": resolve(__dirname, "./src/core/components/encoders"),
       "@environments": resolve(__dirname, "./src/core/components/environments"),
+      "@controls": resolve(__dirname, "./src/core/controls"),
       "@geometries": resolve(__dirname, "./src/core/components/geometries"),
       "@lights": resolve(__dirname, "./src/core/components/lights"),
       "@loaders": resolve(__dirname, "./src/core/components/loaders"),
       "@materials": resolve(__dirname, "./src/core/components/materials"),
-      "@cameras": resolve(__dirname, "./src/core/components/cameras"),
+      "@cameras": resolve(__dirname, "./src/core/cameras"),
 
       // Assets
       "@assets": resolve(__dirname, "./src/assets"),
@@ -38,22 +41,18 @@ export default defineConfig({
       "@panoramas": resolve(__dirname, "./src/assets/panoramas"),
 
       // Other directories
-      "@effects": resolve(__dirname, "./src/effects"),
+      "@effects": resolve(__dirname, "./src/core/effects"),
       "@monitoring": resolve(__dirname, "./src/monitoring"),
-      "@postprocessing": resolve(__dirname, "./src/postprocessing"),
+      "@postprocessing": resolve(__dirname, "./src/core/postprocessing"),
       "@shaders": resolve(__dirname, "./src/shaders"),
-      "@controls": resolve(__dirname, "./src/controls"),
       "@config": resolve(__dirname, "./src/config"),
       "@presets": resolve(__dirname, "./src/presets"),
       "@renderers": resolve(__dirname, "./src/core/renderers"),
       "@tests": resolve(__dirname, "./src/tests"),
     },
-  },
-  server: {
-    open: true,
     hmr: {
       overlay: false, // Disable error overlay if needed
-      port: 3000,
+      port: 5174,
     },
     build: {
       outDir: "dist",

@@ -1,7 +1,7 @@
-import { BasicRenderer } from "@renderers/BasicRenderer";
+import { Renderer } from "@renderers/Renderer";
 import * as THREE from "three";
 
-export class CinematicRenderer extends BasicRenderer {
+export class CinematicRenderer extends Renderer {
   constructor(params = {}) {
     super(params);
 

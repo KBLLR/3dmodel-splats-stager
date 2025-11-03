@@ -18,12 +18,12 @@
       "@assets/*": ["src/assets/*"],
       "@models/*": ["src/assets/models/*"],
       "@textures/*": ["src/assets/textures/*"],
-      "@hdri/*": ["src/assets/hdri/*"],
+      "@hdr/*": ["srcc/assets/environmentMaps/hdr/*"],
       "@effects/*": ["src/effects/*"],
       "@monitoring/*": ["src/monitoring/*"],
-      "@postprocessing/*": ["src/postprocessing/*"],
+      "@postprocessing/*": ["src/core/postprocessing/*"],
       "@shaders/*": ["src/shaders/*"],
-      "@controls/*": ["src/controls/*"],
+      "@controls/*": ["src/core/controls/*"],
       "@config/*": ["src/config/*"]
     }
   },

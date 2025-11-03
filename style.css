@@ -9,6 +9,28 @@
   --color-scheme: light dark;
   --color: rgba(255, 255, 255, 0.87);
   --bc-dark: #242424;
+
+  --tp-base-background-color: hsla(0, 0%, 10%, 0.8);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+  --tp-button-background-color: hsla(0, 0%, 80%, 1);
+  --tp-button-background-color-active: hsla(0, 0%, 100%, 1);
+  --tp-button-background-color-focus: hsla(0, 0%, 95%, 1);
+  --tp-button-background-color-hover: hsla(0, 0%, 85%, 1);
+  --tp-button-foreground-color: hsla(0, 0%, 0%, 0.8);
+  --tp-container-background-color: hsla(0, 0%, 0%, 0.3);
+  --tp-container-background-color-active: hsla(0, 0%, 0%, 0.6);
+  --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.5);
+  --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.4);
+  --tp-container-foreground-color: hsla(0, 0%, 100%, 0.5);
+  --tp-groove-foreground-color: hsla(0, 0%, 0%, 0.2);
+  --tp-input-background-color: hsla(0, 0%, 0%, 0.3);
+  --tp-input-background-color-active: hsla(0, 0%, 0%, 0.6);
+  --tp-input-background-color-focus: hsla(0, 0%, 0%, 0.5);
+  --tp-input-background-color-hover: hsla(0, 0%, 0%, 0.4);
+  --tp-input-foreground-color: hsla(0, 0%, 100%, 0.5);
+  --tp-label-foreground-color: hsla(0, 0%, 100%, 0.5);
+  --tp-monitor-background-color: hsla(0, 0%, 0%, 0.3);
+  --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.3);
 }
 
 * {
@@ -16,6 +38,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Global text styling */
+  color: var(--color);
+  transition: color 0.3s ease; /* Smooth color transition */
+  mix-blend-mode: difference; /* Create contrast with background */
 }
 
 body {
@@ -32,7 +58,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   z-index: 2;
-  pointer-events: auto; /* Allow clicking through to canvas */
+  pointer-events: none; /* Allow clicking through to canvas */
 }
 
 /* Top Left Banner */
@@ -40,6 +66,7 @@ body {
   position: relative;
   width: 250px;
   height: 265px;
+  background-color: var(--bc-dark);
 }
 
 .banner-top-left .month {
@@ -195,4 +222,20 @@ body {
   top: 10px;
   right: 10px;
   z-index: 10; /* Higher z-index to ensure visibility */
+}
+
+/* Apply the color contrast for UI elements */
+.ui-container,
+.navbar,
+.banner-top-left,
+.banner-bottom-center {
+  filter: brightness(0.9); /* Adjust brightness if needed */
+}
+
+.navbar,
+.banner-top-left .month,
+.banner-top-left .year,
+.banner-bottom-center .title-banner-bottom {
+  color: var(--color); /* Ensure text is visible depending on background */
+  filter: contrast(200%); /* Enhance contrast if needed */
 }
