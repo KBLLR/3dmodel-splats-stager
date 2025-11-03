@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const resolveSrc = (path) => fileURLToPath(new URL(`./src/${path}`, import.meta.url));
 
 export default defineConfig({
-  plugins: [glsl()],
+  plugins: [glsl({ query: '?url', import: 'default' })],
   optimizeDeps: {
     include: ["tweakpane"],
   },
