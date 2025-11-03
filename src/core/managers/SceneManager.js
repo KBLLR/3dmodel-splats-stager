@@ -1,21 +1,35 @@
+/**
+ * @file Manages multiple Three.js scenes, their states, and associated managers.
+ * @module SceneManager
+ */
+
 import * as THREE from 'three';
 
+/**
+ * @class SceneManager
+ * @description Handles the creation, activation, updating, and disposal of multiple scenes.
+ * It coordinates with other managers like CameraManager and EnvironmentManager.
+ */
 export class SceneManager {
+    /**
+     * @constructor
+     * @param {THREE.WebGLRenderer} renderer - The Three.js renderer instance.
+     */
     constructor(renderer) {
         this.renderer = renderer;
         
-        // Core components
         this.scenes = new Map();
         this.activeScene = null;
         
-        // Managers
         this.environmentManager = null;
         this.cameraManager = null;
         this.componentManager = null;
         
-        // Scene states
         this.states = new Map();
         
+        /**
+         * @property {object} debugObject - An object holding scene-related parameters for debugging.
+         */
         this.debugObject = {
             activeScene: null,
             fog: {
@@ -44,8 +58,11 @@ export class SceneManager {
         this.initializeRenderer();
     }
 
+    /**
+     * @method initializeRenderer
+     * @description Configures the renderer with initial shadow and tone mapping settings from the debug object.
+     */
     initializeRenderer() {
-        // Configure renderer based on debug settings
         this.renderer.shadowMap.enabled = this.debugObject.shadows.enabled;
         this.renderer.shadowMap.type = this.debugObject.shadows.type;
         this.renderer.shadowMap.autoUpdate = this.debugObject.shadows.autoUpdate;
@@ -54,16 +71,32 @@ export class SceneManager {
         this.renderer.toneMappingExposure = this.debugObject.toneMapping.exposure;
     }
 
+    /**
+     * @method setManagers
+     * @description Injects dependencies for other managers.
+     * @param {EnvironmentManager} environmentManager - The environment manager instance.
+     * @param {CameraManager} cameraManager - The camera manager instance.
+     * @param {ComponentManager} componentManager - The component manager instance.
+     */
     setManagers(environmentManager, cameraManager, componentManager) {
         this.environmentManager = environmentManager;
         this.cameraManager = cameraManager;
         this.componentManager = componentManager;
     }
 
+    /**
+     * @method createScene
+     * @description Creates a new scene with optional configuration.
+     * @param {string} name - The name to identify the scene.
+     * @param {object} [options={}] - Optional configuration for the scene.
+     * @param {string} [options.environment] - Path to an environment map.
+     * @param {string} [options.camera] - The name of the camera to use.
+     * @param {string} [options.controls] - The name of the controls to use.
+     * @returns {THREE.Scene} The created scene.
+     */
     createScene(name, options = {}) {
         const scene = new THREE.Scene();
         
-        // Setup scene properties
         if (this.debugObject.fog.enabled) {
             scene.fog = new THREE.Fog(
                 this.debugObject.fog.color,
@@ -76,7 +109,6 @@ export class SceneManager {
             scene.background = new THREE.Color(this.debugObject.background.color);
         }
 
-        // Store scene and its state
         this.scenes.set(name, scene);
         this.states.set(name, {
             components: new Set(),
@@ -88,6 +120,11 @@ export class SceneManager {
         return scene;
     }
 
+    /**
+     * @method setActiveScene
+     * @description Sets the currently active scene for rendering and updates.
+     * @param {string} name - The name of the scene to activate.
+     */
     setActiveScene(name) {
         const scene = this.scenes.get(name);
         const state = this.states.get(name);
@@ -97,9 +134,8 @@ export class SceneManager {
         this.activeScene = scene;
         this.debugObject.activeScene = name;
 
-        // Apply scene state
         if (this.cameraManager) {
-            this.cameraManager.setActiveCamera(state.camera, state.controls);
+            this.cameraManager.setActive(state.camera); // Assuming setActive handles both camera and controls
         }
 
         if (this.environmentManager && state.environment) {
@@ -107,6 +143,13 @@ export class SceneManager {
         }
     }
 
+    /**
+     * @method addToScene
+     * @description Adds an object to a specified scene.
+     * @param {string} sceneName - The name of the scene.
+     * @param {THREE.Object3D} object - The object to add.
+     * @param {object} [options={}] - Optional data to associate with the object.
+     */
     addToScene(sceneName, object, options = {}) {
         const scene = this.scenes.get(sceneName);
         const state = this.states.get(sceneName);
@@ -120,6 +163,12 @@ export class SceneManager {
         });
     }
 
+    /**
+     * @method removeFromScene
+     * @description Removes an object from a specified scene.
+     * @param {string} sceneName - The name of the scene.
+     * @param {THREE.Object3D} object - The object to remove.
+     */
     removeFromScene(sceneName, object) {
         const scene = this.scenes.get(sceneName);
         const state = this.states.get(sceneName);
@@ -134,28 +183,33 @@ export class SceneManager {
         });
     }
 
+    /**
+     * @method update
+     * @description Updates the active scene and renders it.
+     * @param {number} deltaTime - The time elapsed since the last frame.
+     */
     update(deltaTime) {
         if (!this.activeScene) return;
 
-        // Update managers
         if (this.cameraManager) {
             this.cameraManager.update(deltaTime);
         }
 
-        // Render
         if (this.cameraManager?.activeCamera) {
             this.renderer.render(this.activeScene, this.cameraManager.activeCamera);
         }
     }
 
+    /**
+     * @method updateFromDebug
+     * @description Updates renderer and scene properties from the `debugObject`.
+     */
     updateFromDebug() {
-        // Update renderer settings
         this.renderer.shadowMap.enabled = this.debugObject.shadows.enabled;
         this.renderer.shadowMap.type = this.debugObject.shadows.type;
         this.renderer.toneMapping = this.debugObject.toneMapping.type;
         this.renderer.toneMappingExposure = this.debugObject.toneMapping.exposure;
 
-        // Update active scene
         if (this.activeScene) {
             if (this.debugObject.fog.enabled) {
                 this.activeScene.fog = new THREE.Fog(
@@ -175,6 +229,10 @@ export class SceneManager {
         }
     }
 
+    /**
+     * @method dispose
+     * @description Disposes all scenes and their contents to free up resources.
+     */
     dispose() {
         this.scenes.forEach((scene, name) => {
             const state = this.states.get(name);
@@ -185,7 +243,6 @@ export class SceneManager {
                     }
                 });
             }
-            // Dispose scene
             scene.traverse(object => {
                 if (object.geometry) {
                     object.geometry.dispose();

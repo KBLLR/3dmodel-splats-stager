@@ -1,157 +1,207 @@
-import * as THREE from "three";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
-import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
-import { PMREMGenerator } from "three";
+/**
+ * @file Manages the 3D environment, including loading and applying environment maps and lights.
+ * @module EnvironmentManager
+ */
 
+import * as THREE from 'three';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { PMREMGenerator } from 'three';
+
+/**
+ * @class EnvironmentManager
+ * @description Handles loading different environment map formats (HDR, EXR, LDR) and manages associated lights.
+ */
 export class EnvironmentManager {
-  constructor(renderer, scene, config = {}) {
-    this.renderer = renderer;
-    this.scene = scene;
+    /**
+     * @constructor
+     * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+     * @param {THREE.Scene} scene - The scene to which the environment will be applied.
+     * @param {object} [config={}] - Optional configuration.
+     * @param {string} [config.initialPath] - Path to an initial environment map to load.
+     */
+    constructor(renderer, scene, config = {}) {
+        this.renderer = renderer;
+        this.scene = scene;
+        
+        // Environment lights
+        this.environmentSun = new THREE.DirectionalLight(0xFFFFFF, 0);
+        this.environmentSun.castShadow = true;
+        this.environmentSun.shadow.bias = -0.001;
+        this.environmentSun.shadow.radius = 7;
+        this.environmentSun.visible = false;
+        
+        this.environmentAmbient = new THREE.AmbientLight(0x000000, 1);
+        this.environmentAmbient.visible = false;
+        
+        this.scene.add(this.environmentSun);
+        this.scene.add(this.environmentAmbient);
 
-    // Environment lights
-    this.environmentSun = new THREE.DirectionalLight(0xffffff, 0);
-    this.environmentSun.castShadow = true;
-    this.environmentSun.shadow.bias = -0.001;
-    this.environmentSun.shadow.radius = 7;
-    this.environmentSun.visible = false;
+        // Debug object for tweaking
+        this.debugObject = {
+            intensity: 1,
+            backgroundBlur: 0,
+            environmentBlur: 0,
+            sunIntensity: 0,
+            ambientIntensity: 1,
+            backgroundEnabled: true
+        };
+        
+        // Settings
+        this.currentEnvironment = null;
+        this.pmremGenerator = new PMREMGenerator(this.renderer);
+        this.pmremGenerator.compileEquirectangularShader();
 
-    this.environmentAmbient = new THREE.AmbientLight(0x000000, 1);
-    this.environmentAmbient.visible = false;
-
-    this.scene.add(this.environmentSun);
-    this.scene.add(this.environmentAmbient);
-
-    // Debug object for tweaking
-    this.debugObject = {
-      intensity: 1,
-      backgroundBlur: 0,
-      environmentBlur: 0,
-      sunIntensity: 0,
-      ambientIntensity: 1,
-      backgroundEnabled: true,
-    };
-
-    // Settings
-    this.currentEnvironment = null;
-    this.pmremGenerator = new PMREMGenerator(this.renderer);
-    this.pmremGenerator.compileEquirectangularShader();
-
-    if (config.initialPath) {
-      this.setEnvironmentMapPath(config.initialPath);
+        if (config.initialPath) {
+            this.setEnvironmentMapPath(config.initialPath);
+        }
     }
-  }
+    
+    /**
+     * @method setEnvironmentMapPath
+     * @description Loads an environment map from a given path, automatically detecting the format.
+     * @param {string} path - The path to the environment map file.
+     * @param {object} [options={}] - Optional parameters to apply to the environment.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
+     */
+    async setEnvironmentMapPath(path, options = {}) {
+        const extension = path.split('.').pop().toLowerCase();
+        
+        try {
+            let texture;
+            switch(extension) {
+                case 'hdr':
+                    texture = await this.loadHDR(path);
+                    break;
+                case 'exr':
+                    texture = await this.loadEXR(path);
+                    break;
+                case 'png':
+                case 'jpg':
+                case 'jpeg':
+                    texture = await this.loadLDR(path);
+                    break;
+                default:
+                    throw new Error(`Unsupported format: ${extension}`);
+            }
 
-  async setEnvironmentMapPath(path, options = {}) {
-    const extension = path.split(".").pop().toLowerCase();
-
-    try {
-      let texture;
-      switch (extension) {
-        case "hdr":
-          texture = await this.loadHDR(path);
-          break;
-        case "exr":
-          texture = await this.loadEXR(path);
-          break;
-        case "png":
-        case "jpg":
-        case "jpeg":
-          texture = await this.loadLDR(path);
-          break;
-        default:
-          throw new Error(`Unsupported format: ${extension}`);
-      }
-
-      this.setEnvironmentMap(texture, options);
-      return texture;
-    } catch (error) {
-      console.error("Error loading environment map:", error);
-      throw error;
-    }
-  }
-
-  async loadHDR(path) {
-    return new Promise((resolve, reject) => {
-      new RGBELoader()
-        .setDataType(THREE.FloatType)
-        .load(
-          path,
-          (texture) =>
-            resolve(this.pmremGenerator.fromEquirectangular(texture).texture),
-          undefined,
-          reject,
-        );
-    });
-  }
-
-  async loadEXR(path) {
-    return new Promise((resolve, reject) => {
-      new EXRLoader()
-        .setDataType(THREE.FloatType)
-        .load(
-          path,
-          (texture) =>
-            resolve(this.pmremGenerator.fromEquirectangular(texture).texture),
-          undefined,
-          reject,
-        );
-    });
-  }
-
-  async loadLDR(path) {
-    return new Promise((resolve, reject) => {
-      new THREE.TextureLoader().load(
-        path,
-        (texture) => {
-          texture.minFilter = THREE.NearestFilter;
-          texture.magFilter = THREE.NearestFilter;
-          texture.type = THREE.UnsignedByteType;
-          texture.colorSpace = THREE.SRGBColorSpace;
-          texture.generateMipmaps = false;
-          texture.flipY = false;
-          resolve(texture);
-        },
-        undefined,
-        reject,
-      );
-    });
-  }
-
-  setEnvironmentMap(texture, options = {}) {
-    if (this.currentEnvironment) {
-      this.currentEnvironment.dispose();
+            this.setEnvironmentMap(texture, options);
+            return texture;
+        } catch (error) {
+            console.error('Error loading environment map:', error);
+            throw error;
+        }
     }
 
-    this.currentEnvironment = texture;
-    this.scene.environment = texture;
-
-    if (this.debugObject.backgroundEnabled) {
-      this.scene.background = texture;
-      this.scene.backgroundBlurriness = this.debugObject.backgroundBlur;
+    /**
+     * @method loadHDR
+     * @description Loads and processes an HDR (.hdr) file.
+     * @param {string} path - The path to the HDR file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the processed texture.
+     */
+    async loadHDR(path) {
+        return new Promise((resolve, reject) => {
+            new RGBELoader()
+                .setDataType(THREE.FloatType)
+                .load(path, 
+                    texture => resolve(this.pmremGenerator.fromEquirectangular(texture).texture),
+                    undefined,
+                    reject
+                );
+        });
     }
 
-    // Update light intensities
-    this.environmentSun.intensity = this.debugObject.sunIntensity;
-    this.environmentAmbient.intensity = this.debugObject.ambientIntensity;
-
-    Object.assign(this.debugObject, options);
-  }
-
-  updateFromDebug() {
-    if (this.currentEnvironment) {
-      this.currentEnvironment.intensity = this.debugObject.intensity;
-      if (this.scene.background === this.currentEnvironment) {
-        this.scene.backgroundBlurriness = this.debugObject.backgroundBlur;
-      }
+    /**
+     * @method loadEXR
+     * @description Loads and processes an EXR (.exr) file.
+     * @param {string} path - The path to the EXR file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the processed texture.
+     */
+    async loadEXR(path) {
+        return new Promise((resolve, reject) => {
+            new EXRLoader()
+                .setDataType(THREE.FloatType)
+                .load(path,
+                    texture => resolve(this.pmremGenerator.fromEquirectangular(texture).texture),
+                    undefined,
+                    reject
+                );
+        });
     }
-    this.environmentSun.intensity = this.debugObject.sunIntensity;
-    this.environmentAmbient.intensity = this.debugObject.ambientIntensity;
-  }
 
-  dispose() {
-    if (this.currentEnvironment) {
-      this.currentEnvironment.dispose();
+    /**
+     * @method loadLDR
+     * @description Loads a Low Dynamic Range (LDR) image file (e.g., PNG, JPG).
+     * @param {string} path - The path to the image file.
+     * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
+     */
+    async loadLDR(path) {
+        return new Promise((resolve, reject) => {
+            new THREE.TextureLoader().load(path, 
+                texture => {
+                    texture.minFilter = THREE.NearestFilter;
+                    texture.magFilter = THREE.NearestFilter;
+                    texture.type = THREE.UnsignedByteType;
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.generateMipmaps = false;
+                    texture.flipY = false;
+                    resolve(texture);
+                },
+                undefined,
+                reject
+            );
+        });
     }
-    this.pmremGenerator.dispose();
-  }
+    
+    /**
+     * @method setEnvironmentMap
+     * @description Applies a loaded texture as the scene's environment and background.
+     * @param {THREE.Texture} texture - The texture to apply.
+     * @param {object} [options={}] - Optional parameters to apply.
+     */
+    setEnvironmentMap(texture, options = {}) {
+        if (this.currentEnvironment) {
+            this.currentEnvironment.dispose();
+        }
+
+        this.currentEnvironment = texture;
+        this.scene.environment = texture;
+
+        if (this.debugObject.backgroundEnabled) {
+            this.scene.background = texture;
+            this.scene.backgroundBlurriness = this.debugObject.backgroundBlur;
+        }
+
+        // Update light intensities
+        this.environmentSun.intensity = this.debugObject.sunIntensity;
+        this.environmentAmbient.intensity = this.debugObject.ambientIntensity;
+
+        Object.assign(this.debugObject, options);
+    }
+
+    /**
+     * @method updateFromDebug
+     * @description Updates the environment and light properties from the `debugObject`.
+     */
+    updateFromDebug() {
+        if (this.currentEnvironment) {
+            this.currentEnvironment.intensity = this.debugObject.intensity;
+            if (this.scene.background === this.currentEnvironment) {
+                this.scene.backgroundBlurriness = this.debugObject.backgroundBlur;
+            }
+        }
+        this.environmentSun.intensity = this.debugObject.sunIntensity;
+        this.environmentAmbient.intensity = this.debugObject.ambientIntensity;
+    }
+
+    /**
+     * @method dispose
+     * @description Disposes of the current environment map and the PMREMGenerator.
+     */
+    dispose() {
+        if (this.currentEnvironment) {
+            this.currentEnvironment.dispose();
+        }
+        this.pmremGenerator.dispose();
+    }
 }

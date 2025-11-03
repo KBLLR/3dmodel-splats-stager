@@ -1,6 +1,19 @@
+/**
+ * @file Manages the lifecycle of various components like geometries, materials, and lights.
+ * @module ComponentManager
+ */
+
 import * as THREE from 'three';
 
+/**
+ * @class ComponentManager
+ * @description Handles the registration, retrieval, creation, and disposal of core Three.js components.
+ */
 export class ComponentManager {
+    /**
+     * @constructor
+     * @description Initializes component registries, active component maps, and debug objects.
+     */
     constructor() {
         // Component registries
         this.geometries = new Map();
@@ -22,6 +35,10 @@ export class ComponentManager {
         this.initializeDefaultComponents();
     }
 
+    /**
+     * @method initializeDefaultComponents
+     * @description Registers a set of basic, commonly used components that are always available.
+     */
     initializeDefaultComponents() {
         // Register basic components that are always available
         this.registerGeometry('box', new THREE.BoxGeometry());
@@ -37,17 +54,33 @@ export class ComponentManager {
         this.registerLight('point', new THREE.PointLight());
     }
 
-    // Geometry methods
+    /**
+     * @method registerGeometry
+     * @description Registers a geometry component.
+     * @param {string} name - The name to identify the geometry.
+     * @param {THREE.BufferGeometry} geometry - The geometry object to register.
+     */
     registerGeometry(name, geometry) {
         this.geometries.set(name, geometry);
         this.debugObjects.geometries[name] = geometry.parameters || {};
     }
 
+    /**
+     * @method getGeometry
+     * @description Retrieves a geometry by its name.
+     * @param {string} name - The name of the geometry to retrieve.
+     * @returns {THREE.BufferGeometry|undefined} The geometry object, or undefined if not found.
+     */
     getGeometry(name) {
         return this.geometries.get(name);
     }
 
-    // Material methods
+    /**
+     * @method registerMaterial
+     * @description Registers a material component.
+     * @param {string} name - The name to identify the material.
+     * @param {THREE.Material} material - The material object to register.
+     */
     registerMaterial(name, material) {
         this.materials.set(name, material);
         this.debugObjects.materials[name] = {
@@ -57,11 +90,22 @@ export class ComponentManager {
         };
     }
 
+    /**
+     * @method getMaterial
+     * @description Retrieves a material by its name.
+     * @param {string} name - The name of the material to retrieve.
+     * @returns {THREE.Material|undefined} The material object, or undefined if not found.
+     */
     getMaterial(name) {
         return this.materials.get(name);
     }
 
-    // Light methods
+    /**
+     * @method registerLight
+     * @description Registers a light component.
+     * @param {string} name - The name to identify the light.
+     * @param {THREE.Light} light - The light object to register.
+     */
     registerLight(name, light) {
         this.lights.set(name, light);
         this.debugObjects.lights[name] = {
@@ -71,11 +115,25 @@ export class ComponentManager {
         };
     }
 
+    /**
+     * @method getLight
+     * @description Retrieves a light by its name.
+     * @param {string} name - The name of the light to retrieve.
+     * @returns {THREE.Light|undefined} The light object, or undefined if not found.
+     */
     getLight(name) {
         return this.lights.get(name);
     }
 
-    // Mesh creation and management
+    /**
+     * @method createMesh
+     * @description Creates a mesh from registered geometry and material.
+     * @param {string} name - The name to identify the new mesh.
+     * @param {string} geometryName - The name of the registered geometry.
+     * @param {string} materialName - The name of the registered material.
+     * @returns {THREE.Mesh} The created mesh.
+     * @throws {Error} If the geometry or material is not found.
+     */
     createMesh(name, geometryName, materialName) {
         const geometry = this.getGeometry(geometryName);
         const material = this.getMaterial(materialName);
@@ -91,22 +149,37 @@ export class ComponentManager {
         return mesh;
     }
 
-    // Component activation/deactivation
+    /**
+     * @method activateComponent
+     * @description Adds a component to the active map.
+     * @param {string} name - The name of the component.
+     * @param {object} component - The component object.
+     */
     activateComponent(name, component) {
         this.activeComponents.set(name, component);
     }
 
+    /**
+     * @method deactivateComponent
+     * @description Removes a component from the active map.
+     * @param {string} name - The name of the component to deactivate.
+     */
     deactivateComponent(name) {
         this.activeComponents.delete(name);
     }
 
-    // Update components from debug values
+    /**
+     * @method updateFromDebug
+     * @description Updates a component's properties from its debug object.
+     * @param {string} type - The type of component ('materials', 'lights', etc.).
+     * @param {string} name - The name of the component to update.
+     */
     updateFromDebug(type, name) {
         const debugData = this.debugObjects[type][name];
         if (!debugData) return;
 
-        switch(type) {
-            case 'materials':
+        switch (type) {
+            case 'materials': {
                 const material = this.getMaterial(name);
                 if (material) {
                     material.color?.setHex(debugData.color);
@@ -114,18 +187,23 @@ export class ComponentManager {
                     material.needsUpdate = true;
                 }
                 break;
-            case 'lights':
+            }
+            case 'lights': {
                 const light = this.getLight(name);
                 if (light) {
                     light.intensity = debugData.intensity;
                     light.color?.setHex(debugData.color);
                 }
                 break;
+            }
             // Add other component type updates as needed
         }
     }
 
-    // Resource management
+    /**
+     * @method dispose
+     * @description Disposes all registered components to free up resources.
+     */
     dispose() {
         // Dispose geometries
         this.geometries.forEach(geometry => geometry.dispose());
@@ -141,7 +219,11 @@ export class ComponentManager {
         this.activeComponents.clear();
     }
 
-    // Utility methods
+    /**
+     * @method getAllComponents
+     * @description Gets a list of all registered component names by type.
+     * @returns {object} An object containing arrays of component names.
+     */
     getAllComponents() {
         return {
             geometries: Array.from(this.geometries.keys()),
@@ -151,6 +233,11 @@ export class ComponentManager {
         };
     }
 
+    /**
+     * @method getActiveComponents
+     * @description Gets an array of all currently active components.
+     * @returns {Array<[string, object]>} An array of [name, component] pairs.
+     */
     getActiveComponents() {
         return Array.from(this.activeComponents.entries());
     }

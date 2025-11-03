@@ -1,3 +1,7 @@
+<!--
+ * @file This HTML file sets up the environment for running and displaying scene system tests.
+ * @description It includes a canvas for potential WebGL rendering and a designated area for test results.
+-->
 <!doctype html>
 <html lang="en">
   <head>
@@ -5,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scene System Tests</title>
     <style>
+      /* Basic styling to ensure the canvas fills the screen and test results are overlaid. */
       body {
         margin: 0;
       }
@@ -24,8 +29,12 @@
     </style>
   </head>
   <body>
+    <!-- Canvas element for any Three.js rendering required by the tests. -->
     <canvas></canvas>
+    <!-- Container for displaying the results of the tests. -->
     <div id="testResults"></div>
+    <!-- Scripts that run the actual tests. -->
     <script type="module" src="./sceneTest.js"></script>
+    <script type="module" src="./presetManager.test.js"></script>
   </body>
 </html>

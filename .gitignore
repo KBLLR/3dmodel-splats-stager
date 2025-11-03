@@ -35,12 +35,18 @@ lerna-debug.log*
 *.hdr
 *.exr
 *.png
+!public/icons/icon-192x192.png
+!public/icons/icon-512x512.png
 *.jpg
 *.jpeg
 *.mp3
 *.wav
 *.mp4
 *.webm
+
+# Environments
+.env
+
 
 # Asset directories
 src/assets/models/glb/*

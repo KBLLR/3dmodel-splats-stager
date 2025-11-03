@@ -18,13 +18,17 @@
       "@assets/*": ["src/assets/*"],
       "@models/*": ["src/assets/models/*"],
       "@textures/*": ["src/assets/textures/*"],
-      "@hdr/*": ["srcc/assets/environmentMaps/hdr/*"],
+      "@hdri/*": ["src/assets/hdri/*"],
       "@effects/*": ["src/effects/*"],
       "@monitoring/*": ["src/monitoring/*"],
-      "@postprocessing/*": ["src/core/postprocessing/*"],
+      "@postprocessing/*": ["src/postprocessing/*"],
       "@shaders/*": ["src/shaders/*"],
-      "@controls/*": ["src/core/controls/*"],
-      "@config/*": ["src/config/*"]
+      "@controls/*": ["src/controls/*"],
+      "@config/*": ["src/config/*"],
+      "@renderers/*": ["src/core/renderers/*"],
+      "@cameras/*": ["src/core/components/cameras/*"],
+      "@presets/*": ["src/presets/*"],
+      "@tests/*": ["src/tests/*"]
     }
   },
   "include": ["src/**/*"],

@@ -1,9 +1,26 @@
-import * as THREE from "three";
+/**
+ * @file A custom loader for GLTF models, with integrated Draco/KTX2 support and caching.
+ * @module CustomGLTFLoader
+ */
+
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader";
 
+/**
+ * @class CustomGLTFLoader
+ * @description Wraps Three.js's GLTFLoader to provide integrated Draco and KTX2 support,
+ * model caching, and a simplified interface.
+ */
 export class CustomGLTFLoader {
+  /**
+   * @constructor
+   * @param {object} [params={}] - The parameters for the loader.
+   * @param {string} [params.dracoPath='/draco/'] - The path to the Draco decoder files.
+   * @param {string} [params.ktx2Path='/ktx2/'] - The path to the KTX2 transcoder files.
+   * @param {boolean} [params.withDraco=true] - Whether to enable Draco compression support.
+   * @param {boolean} [params.withKTX2=true] - Whether to enable KTX2 texture support.
+   */
   constructor(params = {}) {
     const {
       dracoPath = "/draco/",
@@ -32,6 +49,9 @@ export class CustomGLTFLoader {
     }
 
     this.cache = new Map();
+    /**
+     * @property {object} debugObject - An object holding the loader's parameters for debugging.
+     */
     this.debugObject = {
       dracoPath,
       ktx2Path,
@@ -40,6 +60,13 @@ export class CustomGLTFLoader {
     };
   }
 
+  /**
+   * @method load
+   * @description Asynchronously loads a GLTF model. Caches the result to avoid redundant loads.
+   * @param {string} path - The path to the GLTF file.
+   * @param {function|null} [onProgress=null] - A callback function for progress events.
+   * @returns {Promise<THREE.Group>} A promise that resolves with the loaded GLTF scene.
+   */
   async load(path, onProgress = null) {
     // Check cache first
     if (this.cache.has(path)) {
@@ -61,6 +88,10 @@ export class CustomGLTFLoader {
     }
   }
 
+  /**
+   * @method dispose
+   * @description Disposes of the loaders and all cached models to free up resources.
+   */
   dispose() {
     if (this.dracoLoader) {
       this.dracoLoader.dispose();
@@ -84,6 +115,11 @@ export class CustomGLTFLoader {
     this.cache.clear();
   }
 
+  /**
+   * @method disposeMaterial
+   * @description Disposes of a material and its associated textures.
+   * @param {THREE.Material} material - The material to dispose.
+   */
   disposeMaterial(material) {
     Object.keys(material).forEach((prop) => {
       if (!material[prop]) return;
