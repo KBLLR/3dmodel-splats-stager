@@ -3,8 +3,6 @@ import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { TweakpaneManager } from "@gui/TweakpaneManager";
 import { CameraManager } from "@managers/CameraManager";
-import { CinematicRenderer } from "@renderers/CinematicRenderer";
-import { CinematicCamera } from "@cameras/CinematicCamera";
 import { HDRIEnvironment } from "@environments/HDRIEnvironment";
 import { EnvPresets } from "@presets/EnvPresets";
 

@@ -182,7 +182,7 @@ export const EnvPresets = {
 };
 export const getPresetsByCategory = (category) => {
   return Object.entries(EnvPresets)
-    .filter(([_, preset]) => preset.category === category)
+    .filter(([, preset]) => preset.category === category)
     .reduce((acc, [key, preset]) => ({ ...acc, [key]: preset }), {});
 };
 
