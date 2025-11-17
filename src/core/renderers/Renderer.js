@@ -48,7 +48,7 @@ export class Renderer extends THREE.WebGLRenderer {
         
         // Physical settings
         this.physicallyCorrectLights = true;
-        this.outputEncoding = THREE.sRGBEncoding;
+        this.outputColorSpace = THREE.SRGBColorSpace;
         this.toneMapping = THREE.ACESFilmicToneMapping;
         this.toneMappingExposure = 1;
         
@@ -85,10 +85,10 @@ export class Renderer extends THREE.WebGLRenderer {
             'ACESFilmic': THREE.ACESFilmicToneMapping
         };
 
-        const encodingTypes = {
-            'Linear': THREE.LinearEncoding,
-            'sRGB': THREE.sRGBEncoding,
-            'Gamma': THREE.GammaEncoding
+        const colorSpaceTypes = {
+            'Linear': THREE.LinearSRGBColorSpace,
+            'sRGB': THREE.SRGBColorSpace,
+            'Gamma': THREE.SRGBColorSpace  // Gamma is deprecated, map to sRGB
         };
 
         const shadowMapTypes = {
@@ -101,7 +101,7 @@ export class Renderer extends THREE.WebGLRenderer {
         this.setClearColor(this.debugObject.clearColor, this.debugObject.clearAlpha);
         this.toneMapping = toneMappingTypes[this.debugObject.toneMapping];
         this.toneMappingExposure = this.debugObject.toneMappingExposure;
-        this.outputEncoding = encodingTypes[this.debugObject.outputEncoding];
+        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputEncoding];
         this.shadowMap.type = shadowMapTypes[this.debugObject.shadowMapType];
         this.shadowMap.needsUpdate = true;
         this.physicallyCorrectLights = this.debugObject.physicallyCorrectLights;

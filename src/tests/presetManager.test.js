@@ -14,7 +14,6 @@ class PresetManagerTest {
   }
 
   logResult(message, passed) {
-    const result = `${passed ? "✅" : "❌"} ${message}`;
     if (this.testResults) {
       const div = document.createElement("div");
       div.innerHTML = message; // Use innerHTML to render h2 tags

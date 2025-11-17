@@ -1,10 +1,7 @@
 import * as THREE from "three";
 import { Pane } from "tweakpane";
 import { FOG_PRESETS } from "@presets/fogPresets";
-import {
-  CAMERA_PRESETS,
-  CAMERA_MOVEMENT_PRESETS,
-} from "@presets/cameraPresets";
+import { CAMERA_MOVEMENT_PRESETS } from "@presets/cameraPresets";
 import { EnvPresets, getPresetsByCategory } from "@presets/EnvPresets";
 
 export class TweakpaneManager {
@@ -328,7 +325,7 @@ export class TweakpaneManager {
     return envParams;
   }
 
-  setupCameraMovement(camera) {
+  setupCameraMovement() {
     const movementParams = {
       preset: "STATIC",
       description: CAMERA_MOVEMENT_PRESETS.STATIC.name,
