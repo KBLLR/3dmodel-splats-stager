@@ -137,12 +137,12 @@ export class EnvironmentManager {
      */
     async loadLDR(path) {
         return new Promise((resolve, reject) => {
-            new THREE.TextureLoader().load(path, 
+            new THREE.TextureLoader().load(path,
                 texture => {
                     texture.minFilter = THREE.NearestFilter;
                     texture.magFilter = THREE.NearestFilter;
                     texture.type = THREE.UnsignedByteType;
-                    texture.encoding = THREE.sRGBEncoding;
+                    texture.colorSpace = THREE.SRGBColorSpace;
                     texture.generateMipmaps = false;
                     texture.flipY = false;
                     resolve(texture);

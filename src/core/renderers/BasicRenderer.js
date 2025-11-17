@@ -41,9 +41,9 @@ export class BasicRenderer extends THREE.WebGLRenderer {
         this.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.setClearColor(0x000000, 0);
         this.setSize(window.innerWidth, window.innerHeight);
-        
+
         this.physicallyCorrectLights = true;
-        this.outputEncoding = THREE.sRGBEncoding;
+        this.outputColorSpace = THREE.SRGBColorSpace;
         this.toneMapping = THREE.ACESFilmicToneMapping;
         this.toneMappingExposure = 1;
         this.shadowMap.enabled = true;
@@ -77,17 +77,17 @@ export class BasicRenderer extends THREE.WebGLRenderer {
         this.toneMapping = toneMappingTypes[this.debugObject.toneMapping];
         this.toneMappingExposure = this.debugObject.toneMappingExposure;
 
-        // Update encoding
-        const encodingTypes = {
-            'Linear': THREE.LinearEncoding,
-            'sRGB': THREE.sRGBEncoding
+        // Update color space
+        const colorSpaceTypes = {
+            'Linear': THREE.LinearSRGBColorSpace,
+            'sRGB': THREE.SRGBColorSpace
         };
         if (this.debugObject.outputEncoding === 'Gamma') {
             console.warn(
-                '[BasicRenderer] GammaEncoding is not available in this version of three.js; falling back to sRGBEncoding.'
+                '[BasicRenderer] GammaEncoding is not available in this version of three.js; falling back to SRGBColorSpace.'
             );
         }
-        this.outputEncoding = encodingTypes[this.debugObject.outputEncoding] ?? THREE.sRGBEncoding;
+        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputEncoding] ?? THREE.SRGBColorSpace;
 
         // Update shadow map type
         const shadowMapTypes = {
