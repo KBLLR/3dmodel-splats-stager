@@ -41,8 +41,6 @@ export class BasicRenderer extends THREE.WebGLRenderer {
         this.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.setClearColor(0x000000, 0);
         this.setSize(window.innerWidth, window.innerHeight);
-
-        this.physicallyCorrectLights = true;
         this.outputColorSpace = THREE.SRGBColorSpace;
         this.toneMapping = THREE.ACESFilmicToneMapping;
         this.toneMappingExposure = 1;
@@ -55,7 +53,7 @@ export class BasicRenderer extends THREE.WebGLRenderer {
         this.debugObject = {
             toneMappingExposure: 1,
             toneMapping: 'ACESFilmic',
-            outputEncoding: 'sRGB',
+            outputColorSpace: 'sRGB',
             shadowMapType: 'PCFSoft'
         };
     }
@@ -82,12 +80,12 @@ export class BasicRenderer extends THREE.WebGLRenderer {
             'Linear': THREE.LinearSRGBColorSpace,
             'sRGB': THREE.SRGBColorSpace
         };
-        if (this.debugObject.outputEncoding === 'Gamma') {
+        if (this.debugObject.outputColorSpace === 'Gamma') {
             console.warn(
                 '[BasicRenderer] GammaEncoding is not available in this version of three.js; falling back to SRGBColorSpace.'
             );
         }
-        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputEncoding] ?? THREE.SRGBColorSpace;
+        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputColorSpace] ?? THREE.SRGBColorSpace;
 
         // Update shadow map type
         const shadowMapTypes = {

@@ -47,7 +47,7 @@ export class Renderer extends THREE.WebGLRenderer {
         this.setSize(window.innerWidth, window.innerHeight);
         
         // Physical settings
-        this.physicallyCorrectLights = true;
+        this.useLegacyLights = true;
         this.outputColorSpace = THREE.SRGBColorSpace;
         this.toneMapping = THREE.ACESFilmicToneMapping;
         this.toneMappingExposure = 1;
@@ -64,9 +64,8 @@ export class Renderer extends THREE.WebGLRenderer {
             clearAlpha: 0,
             toneMappingExposure: 1,
             toneMapping: 'ACESFilmic',
-            outputEncoding: 'sRGB',
-            shadowMapType: 'PCFSoft',
-            physicallyCorrectLights: true,
+            outputColorSpace: 'sRGB',
+            useLegacyLights: true,
             antialias: true,
             pixelRatio: window.devicePixelRatio
         };
@@ -101,10 +100,8 @@ export class Renderer extends THREE.WebGLRenderer {
         this.setClearColor(this.debugObject.clearColor, this.debugObject.clearAlpha);
         this.toneMapping = toneMappingTypes[this.debugObject.toneMapping];
         this.toneMappingExposure = this.debugObject.toneMappingExposure;
-        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputEncoding];
-        this.shadowMap.type = shadowMapTypes[this.debugObject.shadowMapType];
-        this.shadowMap.needsUpdate = true;
-        this.physicallyCorrectLights = this.debugObject.physicallyCorrectLights;
+        this.outputColorSpace = colorSpaceTypes[this.debugObject.outputColorSpace];
+        this.useLegacyLights = this.debugObject.useLegacyLights;
         
         if (this.debugObject.antialias !== this.antialias) {
             console.warn('Antialiasing change requires renderer recreation');

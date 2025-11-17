@@ -10,7 +10,7 @@ import * as THREE from "three";
 import { Pane } from "tweakpane";
 import Stats from "stats.js";
 import { CinematicRenderer } from "@renderers/CinematicRenderer";
-import { CinematicCamera } from "@cameras/CinematicCamera";
+import { CinematicCamera } from "./core/cameras/CinematicCamera";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { HDRIEnvironment } from "@components/environments/HDRIEnvironment";
 import { PresetManager } from "@core/PresetManager";

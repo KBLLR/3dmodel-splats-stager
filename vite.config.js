@@ -26,7 +26,7 @@ export default defineConfig({
       "@lights": resolveSrc("core/components/lights"),
       "@loaders": resolveSrc("core/components/loaders"),
       "@materials": resolveSrc("core/components/materials"),
-      "@cameras": resolveSrc("core/components/cameras"),
+      "@cameras": resolveSrc("core/cameras"),
 
       // Assets
       "@assets": resolveSrc("assets"),
