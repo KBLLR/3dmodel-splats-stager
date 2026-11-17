@@ -1,0 +1,18 @@
+title = "3dmodel-splats-stager"
+
+[extend]
+useDefault = true
+
+# Tripo keys use a public vendor prefix. These rules catch new leaks.
+# Historical commits are out of scope for CI; see the gitleaks workflow.
+[[rules]]
+id = "tripo-api-key"
+description = "Tripo AI API key"
+regex = '''tsk_[A-Za-z0-9]-[A-Za-z0-9]{20,}'''
+keywords = ["tsk_"]
+
+[[rules]]
+id = "tripo-env-assignment"
+description = "Non-empty Tripo environment variable assignment"
+regex = '''(?i)TRIPOAI_[A-Z0-9_]*\s*=\s*["']?[^\s"']{8,}'''
+keywords = ["TRIPOAI_"]
