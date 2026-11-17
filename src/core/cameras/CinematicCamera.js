@@ -1,4 +1,15 @@
-import { CinematicCamera as ThreeCinematicCamera } from "three/examples/jsm/cameras/CinematicCamera";
+import { PerspectiveCamera } from "three";
+
+// Local patch: three r0.181 (the version this repo pins) no longer ships
+// examples/jsm/cameras/CinematicCamera, so the import failed and the page stayed blank.
+// This base keeps the same interface without the built-in bokeh pass.
+class ThreeCinematicCamera extends PerspectiveCamera {
+  setLens(focalLength, filmGauge, fov, aspect, near, far, focus, aperture) {
+    if (focus !== undefined) this.focus = focus;
+    if (aperture !== undefined) this.aperture = aperture;
+    this.updateProjectionMatrix();
+  }
+}
 
 export class CinematicCamera extends ThreeCinematicCamera {
   constructor(params = {}) {
