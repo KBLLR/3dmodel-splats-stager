@@ -46,6 +46,8 @@ lerna-debug.log*
 
 # Environments
 .env
+.env.*
+!.env.example
 
 
 # Asset directories

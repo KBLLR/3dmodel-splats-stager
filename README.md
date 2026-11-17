@@ -23,6 +23,12 @@ You need to have Node.js and npm installed on your system. You can download them
     npm install
     ```
 
+3.  **Local environment file (optional):**
+    ```bash
+    cp .env.example .env
+    ```
+    `.env` is gitignored. Variable names are listed in `.env.example` with empty values. Fill them in only on your machine, and do not commit `.env`.
+
 ## Usage
 
 ### Running the Development Server
