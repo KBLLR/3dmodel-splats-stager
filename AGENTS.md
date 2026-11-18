@@ -6,7 +6,7 @@ Scope: the entire repository rooted at this folder.
 
 ## Quick Start
 - Requirements: Node.js 18+ (Vite 5), npm 9+.
-- Install: `npm i`
+- Install: `npm i` (npm only; `package-lock.json` is the lockfile — do not add a pnpm or yarn lockfile)
 - Dev server: `npm run dev`
 - Build: `npm run build`
 - Preview build: `npm run preview`

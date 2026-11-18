@@ -22,6 +22,7 @@ You need to have Node.js and npm installed on your system. You can download them
     ```bash
     npm install
     ```
+    This project uses npm. `package-lock.json` is the only lockfile, and CI installs with `npm ci`.
 
 3.  **Local environment file (optional):**
     ```bash
