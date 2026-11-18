@@ -1,0 +1,19 @@
+{
+  "id": "autovan",
+  "legacyKey": "AUTOVAN",
+  "legacyLists": ["lumaSplats", "lumaModels"],
+  "title": "Autovan",
+  "description": "Demo Gaussian splat loaded from a Luma capture URL.",
+  "captureDate": null,
+  "tags": ["demo", "luma", "vehicle"],
+  "location": null,
+  "defaultCamera": "WIDE_SHOT",
+  "defaultMovement": "STATIC",
+  "defaultEffect": "cinematic",
+  "visibleFields": ["title", "description", "tags"],
+  "demo": true,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/5be32ec6-b11f-44eb-bbb7-57c5beee0d75"
+  }
+}

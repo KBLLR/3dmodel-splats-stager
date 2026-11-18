@@ -1,0 +1,17 @@
+{
+  "id": "sample-mesh",
+  "title": "Sample mesh",
+  "description": "A tiny colored triangle so the PLY loader can be tried without a capture download. The meshes already in src/assets/ply are not loaded by this record.",
+  "captureDate": null,
+  "tags": ["reference", "ply", "mesh"],
+  "location": null,
+  "defaultCamera": "DEFAULT",
+  "defaultMovement": "ORBIT",
+  "defaultEffect": "clean",
+  "visibleFields": ["title", "description", "source", "tags"],
+  "demo": false,
+  "source": {
+    "kind": "ply",
+    "url": "ply:triangle.ply"
+  }
+}

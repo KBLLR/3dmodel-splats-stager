@@ -1,0 +1,19 @@
+{
+  "id": "mercado-barcelo",
+  "legacyKey": "MERCADO_BARCELO",
+  "legacyLists": ["lumaSplats"],
+  "title": "Mercado Barcelo",
+  "description": "Luma capture named Mercado Barcelo in the old splat list.",
+  "captureDate": null,
+  "tags": ["luma", "place"],
+  "location": "Mercado Barcelo",
+  "defaultCamera": "WIDE_SHOT",
+  "defaultMovement": "CRANE",
+  "defaultEffect": "soft",
+  "visibleFields": ["title", "location", "tags"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/786aaf8b-ff56-44cd-8901-93da42d53e9e"
+  }
+}

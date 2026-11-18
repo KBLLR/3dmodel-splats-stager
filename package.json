@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext .js --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js --fix",
     "format": "prettier --write .",
     "clean": "rimraf dist",
     "test:scene": "vite",

@@ -44,6 +44,10 @@ export class PresetManager {
         loader: () => import("@presets/fogPresets"),
         exportName: "FOG_PRESETS",
       },
+      [PRESET_REGISTRY.MODELS]: {
+        loader: () => import("@splats/catalog"),
+        exportName: "MODEL_PRESETS",
+      },
     };
   }
 

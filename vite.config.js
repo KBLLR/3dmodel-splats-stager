@@ -43,6 +43,8 @@ export default defineConfig({
       "@controls": resolveSrc("controls"),
       "@config": resolveSrc("config"),
       "@presets": resolveSrc("presets"),
+      "@splats": resolveSrc("splats"),
+      "@template": resolveSrc("template"),
       "@renderers": resolveSrc("core/renderers"),
       "@tests": resolveSrc("tests"),
     },

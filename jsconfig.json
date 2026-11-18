@@ -28,6 +28,8 @@
       "@renderers/*": ["src/core/renderers/*"],
       "@cameras/*": ["src/core/cameras/*"],
       "@presets/*": ["src/presets/*"],
+      "@splats/*": ["src/splats/*"],
+      "@template/*": ["src/template/*"],
       "@tests/*": ["src/tests/*"]
     }
   },

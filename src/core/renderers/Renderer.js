@@ -90,13 +90,6 @@ export class Renderer extends THREE.WebGLRenderer {
             'Gamma': THREE.SRGBColorSpace  // Gamma is deprecated, map to sRGB
         };
 
-        const shadowMapTypes = {
-            'Basic': THREE.BasicShadowMap,
-            'PCF': THREE.PCFShadowMap,
-            'PCFSoft': THREE.PCFSoftShadowMap,
-            'VSM': THREE.VSMShadowMap
-        };
-
         this.setClearColor(this.debugObject.clearColor, this.debugObject.clearAlpha);
         this.toneMapping = toneMappingTypes[this.debugObject.toneMapping];
         this.toneMappingExposure = this.debugObject.toneMappingExposure;

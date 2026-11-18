@@ -1,0 +1,19 @@
+{
+  "id": "centro-cultural",
+  "legacyKey": "CENTRO_CULTURAL",
+  "legacyLists": ["lumaSplats", "lumaModels"],
+  "title": "Centro Cultural",
+  "description": "Demo Gaussian splat for a place capture, loaded from a Luma URL.",
+  "captureDate": null,
+  "tags": ["demo", "luma", "place"],
+  "location": "Centro Cultural",
+  "defaultCamera": "ARCHITECTURAL",
+  "defaultMovement": "ORBIT",
+  "defaultEffect": "night",
+  "visibleFields": ["title", "description", "location", "captureDate", "tags"],
+  "demo": true,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/e5a73f4c-a541-495f-9b3c-2577cfc21592"
+  }
+}

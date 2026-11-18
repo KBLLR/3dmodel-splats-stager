@@ -1,0 +1,19 @@
+{
+  "id": "silo-gate",
+  "legacyKey": "SILO_GATE",
+  "legacyLists": ["lumaSplats"],
+  "title": "Silo Gate",
+  "description": "Luma capture named Silo Gate in the old splat list.",
+  "captureDate": null,
+  "tags": ["luma", "place"],
+  "location": "Silo Gate",
+  "defaultCamera": "CINEMATIC_ANAMORPHIC",
+  "defaultMovement": "STATIC",
+  "defaultEffect": "cinematic",
+  "visibleFields": ["title", "description", "location", "captureDate"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/6fcc8ad5-5aad-46a8-98dc-a79e7a096848"
+  }
+}

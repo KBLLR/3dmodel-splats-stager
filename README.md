@@ -1,106 +1,118 @@
-# 3D Model Splats Stager
+# Splat Template
 
-A modern, high-performance 3D object stager specializing in Gaussian Splatting models, built with Three.js and Vite. This application enables advanced visualization of 3D models with sophisticated post-processing effects and real-time parameter adjustment, serving as a powerful tool for artists, designers, and developers to test and showcase their 3D assets in a feature-rich environment.
+A reusable viewer for **presenting** Gaussian splats. Load a splat, choose which metadata fields fill the interface, and swap the layout, cinematic camera, and effect. This project does not generate splats.
 
-## Getting Started
+The page is a dark stage with three layouts (Studio, Editorial, Catalog), a splat library, camera and movement controls, and a small set of presentation grades. The default records are Luma captures. One extra record loads a tiny triangle mesh so the PLY path can be tried without a download.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+## What the viewer does
 
-### Prerequisites
+- Loads a **Luma capture** through `LumaLabsLoader` (`@lumaai/luma-web`), or a **mesh PLY** through Three.js `PLYLoader`.
+- Fills the open layout from the splat record. The record's `visibleFields` list is the only metadata drawn in that block. The library and the Editorial splat menu still show titles so you can change the selection.
+- Swaps UI compositions without reloading the source: Studio (side panel), Editorial (large type), Catalog (card rail).
+- Applies a cinematic camera preset (focal length becomes field of view, plus focus and aperture) and a movement preset (static, handheld, crane, dolly, orbit).
+- Applies an effect: renderer exposure, a fog preset color at a light density, and a vignette/grain overlay. Switching an effect replaces the stage color.
 
-You need to have Node.js and npm installed on your system. You can download them from [nodejs.org](https://nodejs.org/).
+Orbit the stage when movement is Static. The other movements take the camera until you return to Static. If the operating system asks for reduced motion, movement presets hold a still frame.
 
-### Installation
+## JSON per splat
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/3d-model-splats-stager.git
-    cd 3d-model-splats-stager
-    ```
+Each splat is one file in [`src/splats/records/`](src/splats/records/). [`src/splats/catalog.js`](src/splats/catalog.js) loads every `*.json` file and publishes them as `MODEL_PRESETS`.
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-    This project uses npm. `package-lock.json` is the only lockfile, and CI installs with `npm ci`.
+```json
+{
+  "id": "autovan",
+  "title": "Autovan",
+  "description": "Demo Gaussian splat loaded from a Luma capture URL.",
+  "captureDate": null,
+  "tags": ["demo", "luma", "vehicle"],
+  "location": null,
+  "defaultCamera": "WIDE_SHOT",
+  "defaultMovement": "STATIC",
+  "defaultEffect": "cinematic",
+  "visibleFields": ["title", "description", "tags"],
+  "demo": true,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/5be32ec6-b11f-44eb-bbb7-57c5beee0d75"
+  }
+}
+```
 
-3.  **Local environment file (optional):**
-    ```bash
-    cp .env.example .env
-    ```
-    `.env` is gitignored. Variable names are listed in `.env.example` with empty values. Fill them in only on your machine, and do not commit `.env`.
+| Field | Role |
+| --- | --- |
+| `id` | Preset name. `PresetManager.loadPreset("models", id)` returns the record. |
+| `title`, `description`, `captureDate`, `tags`, `location` | Metadata the layout may show. |
+| `source.kind` | `luma` or `ply`. |
+| `source.url` | Luma capture URL, an `http(s)` PLY URL, a site-root path, or `ply:<filename>` for a file already in `src/assets/ply`. |
+| `defaultCamera` | Key in `CAMERA_PRESETS`. |
+| `defaultMovement` | Key in `CAMERA_MOVEMENT_PRESETS`. |
+| `defaultEffect` | `clean`, `soft`, `cinematic`, or `night`. |
+| `visibleFields` | Ordered subset of `title`, `description`, `captureDate`, `tags`, `location`, `source`. |
+| `demo` | When true, the viewer prefers this record on first load. |
 
-## Usage
+Empty `captureDate` and `location` render as "Not recorded". The files do not invent dates or coordinates.
 
-### Running the Development Server
+`src/presets/index.js` already had an empty `PRESET_REGISTRY.MODELS` slot (`"models"`). `PresetManager` now loads that slot from the catalog. Camera, camera-movement, and fog presets are unchanged and still load the same way.
 
-To start the development server with hot module replacement, run the following command:
+### One list instead of two
+
+`src/config/lumaSplats.js` (`LUMA_SPLATS`) and `src/presets/lumaLabsModels.js` (`LUMA_MODELS`) used to repeat capture URLs. Both files now re-export maps built from the JSON records.
+
+- `LUMA_SPLATS` is every Luma record that belonged to the old splat list.
+- `LUMA_MODELS` is the smaller set that belonged to the old model list.
+- **TREE is not a record.** In `LUMA_SPLATS` it used Autovan's URL. In `LUMA_MODELS` the same id was Autovan's URL with a trailing `l` (`…0d75l`). Autovan keeps the shared capture URL.
+
+Two records are marked `demo: true` and use those existing Luma URLs: Autovan and Centro Cultural.
+
+## Where the records live
+
+The viewer's current source is the JSON files in this repository.
+
+The owner's Core-X house, **Memory Blocks**, is the place those records are meant to live. In that house the splat records are `data/local-splats.json` and `data/scenes.json`. This app does not fetch Memory Blocks yet. See Next steps.
+
+## Template map
+
+| Concern | Where it lives |
+| --- | --- |
+| Splat source / loading | [`src/splats/SplatSource.js`](src/splats/SplatSource.js), [`LumaLabsLoader`](src/core/components/loaders/LumaLabsLoader.js), [`PlyMeshLoader`](src/core/components/loaders/PlyMeshLoader.js). `LoaderManager` registers both loaders (`splat` and `ply`). |
+| Per-splat metadata | [`src/splats/records/*.json`](src/splats/records/) and [`src/splats/catalog.js`](src/splats/catalog.js). [`src/splats/fields.js`](src/splats/fields.js) formats `visibleFields`. |
+| UI compositions | [`src/template/compositions/`](src/template/compositions/) (`studio`, `editorial`, `catalog`). [`ViewerApp`](src/template/ViewerApp.js) owns the stage. |
+| Cinematic cameras | [`src/presets/cameraPresets.js`](src/presets/cameraPresets.js) and [`src/template/cameraRig.js`](src/template/cameraRig.js). The rig frames each preset; lens numbers come from the preset. |
+| Effects | [`src/effects/effectPresets.js`](src/effects/effectPresets.js) and [`src/effects/applyEffect.js`](src/effects/applyEffect.js). Fog colors come from [`src/presets/fogPresets.js`](src/presets/fogPresets.js). |
+
+Entry: [`index.html`](index.html) loads [`src/main.js`](src/main.js), which starts `ViewerApp`. The renderer is `LumaRenderer` (ACES filmic, sRGB). The camera is `CinematicCamera`.
+
+A Luma load that fails or times out leaves the metadata on screen and a short status line. `sample-mesh` is not a Gaussian splat. It loads [`src/splats/fixtures/triangle.ply`](src/splats/fixtures/triangle.ply), a small ASCII triangle, through `ply:<filename>`. Any other mesh PLY can use an `http(s)` URL or a site-root path on `source.url`. The binary meshes already in `src/assets/ply` stay where they are. They are trimesh exports, they are not referenced by the catalog, and they are not the warehouse copies.
+
+Vignette and grain are CSS overlays. Fog and exposure hit the Three.js scene and renderer. `CinematicRenderer` still stores vignette and grain flags on `debugObject`; there is no bloom or film pass in this template.
+
+## Getting started
+
+Node.js 18+ and npm 9+. This repo uses npm and `package-lock.json`.
 
 ```bash
+git clone https://github.com/KBLLR/3dmodel-splats-stager.git
+cd 3dmodel-splats-stager
+npm ci
 npm run dev
 ```
 
-This will open the application in your default browser, typically at `http://localhost:5173`.
+Vite prints the local URL (port 5173 unless that port is taken).
 
-### Running Tests
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server with hot reload. |
+| `npm run build` | Production build into `dist/`. |
+| `npm run preview` | Serve the production build. |
+| `npm run lint` | ESLint on `.js` files. |
+| `npm run format` | Prettier write. |
+| `npm run test` | Starts Vite. Open `/src/tests/` for the browser checks (scene config, presets, and the splat catalog). |
 
-The project includes a suite of browser-based tests. To run them, use the following command:
+To add a splat, drop a JSON file in `src/splats/records/` using the fields above. Use a Luma capture URL you are allowed to present, or a PLY URL. Do not commit secrets. The viewer does not read API tokens.
 
-```bash
-npm run test
-```
+## Next steps
 
-This will start a Vite server to serve the tests from the `src/tests` directory. Open the provided URL in your browser to see the test results.
-
-### Building for Production
-
-To build the application for production, run:
-
-```bash
-npm run build
-```
-
-This command will create a `dist` directory with the optimized and minified assets, ready for deployment.
-
-## Project Structure
-
-The project's source code is located in the `src` directory and is organized as follows:
-
--   **`src/assets`**: Contains static assets like environment maps and icons.
--   **`src/core`**: The core application logic, divided into subdirectories:
-    -   **`components`**: Reusable Three.js components (cameras, lights, materials, etc.).
-    -   **`generators`**: Classes that generate complex objects like scenes and stages.
-    -   **`managers`**: Classes that manage different aspects of the application (scenes, cameras, loaders, etc.).
-    -   **`renderers`**: Custom Three.js renderer classes with specific configurations.
-    -   **`scenes`**: Definitions for different scenes within the application.
-    -   **`utils`**: Core utility functions.
--   **`src/presets`**: Contains preset configurations for cameras, fog, scenes, and models.
--   **`src/tests`**: Contains the browser-based test suite.
--   **`src/utils`**: General utility functions for the application.
-
-## Key Features
-- Advanced rendering pipeline using Three.js r157
-- Gaussian Splatting support via Luma.ai integration
-- Real-time parameter controls with Tweakpane 4.0.5
-- High-quality post-processing effects
-- Performance monitoring and optimization
-- Modern ES modules architecture
-- Progressive Web App (PWA) support
-- Shader-based visual effects
-
-## Technical Stack
-- **Core Engine**: Three.js with ES modules
-- **Build System**: Vite 5.4
-- **UI Controls**: Tweakpane 4
-- **Effects**: Post-processing 7.3.1
-- **Performance**: Stats.js
-- **Splatting**: Luma Web SDK
-
-## Development Features
-- Hot Module Replacement (HMR)
-- GLSL shader support with minification
-- SVG icon system
-- Automatic compression for production builds
-- Environment variable handling
-- ESLint and Prettier configuration
-- Type support for Three.js
+1. **Wire Memory Blocks as the metadata source.** Read the Core-X Memory Blocks house (`data/local-splats.json` and `data/scenes.json`) instead of only the JSON files under `src/splats/records/`. Keep the same record shape so compositions, cameras, and effects stay swappable.
+2. **Treat the CoreX-Warehouse drive as the only source of truth for `.ply` files.** The canonical path is `datasets/gaussian-splats/ply`. Files in `src/assets/ply`, and any cloud copy, are references. Point `source.url` at the warehouse object. Do not move or delete the local PLY files as part of that switch.
+3. **Curate the demo set.** Autovan and Centro Cultural are marked `demo` so the template has two working Luma entries. Replace or trim them once Memory Blocks and the warehouse feed are connected.
+4. **Deploy to GitHub Pages.** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) already runs `npm ci`, `npm run build`, and uploads `dist/` on pushes to `main`. Publish from that workflow after the metadata source and warehouse URLs are in place, so the hosted viewer is not left pointing at local references.
