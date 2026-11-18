@@ -1,0 +1,19 @@
+{
+  "id": "cow",
+  "legacyKey": "COW",
+  "legacyLists": ["lumaSplats", "lumaModels"],
+  "title": "Cow",
+  "description": "Luma capture from the consolidated cow set.",
+  "captureDate": null,
+  "tags": ["luma", "animal"],
+  "location": null,
+  "defaultCamera": "CLOSE_UP",
+  "defaultMovement": "STATIC",
+  "defaultEffect": "soft",
+  "visibleFields": ["title", "description", "tags", "captureDate"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/6f2fb3ec-3652-4132-b8ed-b782ca3d9f3c"
+  }
+}

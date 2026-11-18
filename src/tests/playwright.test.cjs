@@ -16,8 +16,15 @@ const path = require('path');
 
     // Wait for the "Tests Complete" message
     await page.waitForFunction(
-      () => document.body.innerText.includes('Tests Complete'),
-      { timeout: 30000 }
+      () => {
+        const text = document.body.innerText;
+        return (
+          text.includes("PresetManager Tests Complete") &&
+          text.includes("Catalog Tests Complete") &&
+          text.includes("Tests Complete")
+        );
+      },
+      { timeout: 30000 },
     );
 
     // Check for any failed tests

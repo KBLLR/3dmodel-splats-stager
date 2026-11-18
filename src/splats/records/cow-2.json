@@ -1,0 +1,19 @@
+{
+  "id": "cow-2",
+  "legacyKey": "COW2",
+  "legacyLists": ["lumaSplats"],
+  "title": "Cow 2",
+  "description": "Second cow capture from the old Luma splat list.",
+  "captureDate": null,
+  "tags": ["luma", "animal"],
+  "location": null,
+  "defaultCamera": "PORTRAIT",
+  "defaultMovement": "HANDHELD",
+  "defaultEffect": "soft",
+  "visibleFields": ["title", "description", "tags"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/96294573-08b6-4ee4-ae7a-1c344c78ba27"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "alonso-park",
+  "legacyKey": "ALONSO_PARK",
+  "legacyLists": ["lumaSplats"],
+  "title": "Alonso Park",
+  "description": "Luma capture named Alonso Park in the old splat list.",
+  "captureDate": null,
+  "tags": ["luma", "place"],
+  "location": "Alonso Park",
+  "defaultCamera": "DRONE_SHOT",
+  "defaultMovement": "ORBIT",
+  "defaultEffect": "clean",
+  "visibleFields": ["title", "description", "location", "tags"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/18a142f1-e81f-49d2-a8b5-55ca3fb4ed98"
+  }
+}

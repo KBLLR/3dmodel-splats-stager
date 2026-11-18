@@ -1,0 +1,19 @@
+{
+  "id": "cow-3",
+  "legacyKey": "COW3",
+  "legacyLists": ["lumaSplats"],
+  "title": "Cow 3",
+  "description": "Third cow capture from the old Luma splat list.",
+  "captureDate": null,
+  "tags": ["luma", "animal"],
+  "location": null,
+  "defaultCamera": "DRAMATIC",
+  "defaultMovement": "STATIC",
+  "defaultEffect": "cinematic",
+  "visibleFields": ["title", "tags"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/6113c57b-1fd8-4627-8b76-0538613fe64e"
+  }
+}

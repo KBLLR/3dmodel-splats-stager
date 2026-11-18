@@ -21,7 +21,7 @@ export const PRESET_REGISTRY = {
     AUDIO: 'audio',
     VISUAL: 'visual',
     EFFECTS: 'effects',
-    MODELS: 'models',
+    MODELS: 'models', // splat records from src/splats/records, via PresetManager
     SCENES: 'scenes',
     WEATHER: 'weather',
     MATERIALS: 'materials'

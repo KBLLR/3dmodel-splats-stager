@@ -6,6 +6,7 @@
 import { CustomGLTFLoader } from '@loaders/GLTFLoader';
 import { CustomDRACOLoader } from '@loaders/DRACOLoader';
 import { LumaLabsLoader } from '@loaders/LumaLabsLoader';
+import { PlyMeshLoader } from '@loaders/PlyMeshLoader';
 import { CustomRGBELoader } from '@loaders/RGBELoader';
 import { CustomEXRLoader } from '@loaders/EXRLoader';
 
@@ -35,6 +36,7 @@ export class LoaderManager {
         this.loaders.set('gltf', new CustomGLTFLoader());
         this.loaders.set('draco', new CustomDRACOLoader());
         this.loaders.set('splat', new LumaLabsLoader());
+        this.loaders.set('ply', new PlyMeshLoader());
         this.loaders.set('rgbe', new CustomRGBELoader());
         this.loaders.set('exr', new CustomEXRLoader());
     }

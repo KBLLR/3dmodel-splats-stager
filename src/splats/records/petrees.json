@@ -1,0 +1,19 @@
+{
+  "id": "petrees",
+  "legacyKey": "PETREES",
+  "legacyLists": ["lumaSplats", "lumaModels"],
+  "title": "Petrees",
+  "description": "Luma capture named Petrees in the old model list.",
+  "captureDate": null,
+  "tags": ["luma"],
+  "location": null,
+  "defaultCamera": "DEFAULT",
+  "defaultMovement": "DOLLY",
+  "defaultEffect": "clean",
+  "visibleFields": ["description", "source"],
+  "demo": false,
+  "source": {
+    "kind": "luma",
+    "url": "https://lumalabs.ai/capture/c84fde40-58fd-4954-9d8d-db897a8f6b41"
+  }
+}
