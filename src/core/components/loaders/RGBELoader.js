@@ -5,6 +5,7 @@
 
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import * as THREE from "three";
+import { assetUrl } from "@template/assetUrl";
 
 /**
  * @class CustomRGBELoader
@@ -38,19 +39,20 @@ export class CustomRGBELoader {
    * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
    */
   async load(path, onProgress = null) {
-    if (this.cache.has(path)) {
-      return this.cache.get(path).clone();
+    const resolved = assetUrl(path);
+    if (this.cache.has(resolved)) {
+      return this.cache.get(resolved).clone();
     }
 
     try {
       this.loader.setDataType(this.debugObject.dataType);
 
       const texture = await new Promise((resolve, reject) => {
-        this.loader.load(path, resolve, onProgress, reject);
+        this.loader.load(resolved, resolve, onProgress, reject);
       });
 
       texture.mapping = THREE.EquirectangularReflectionMapping;
-      this.cache.set(path, texture);
+      this.cache.set(resolved, texture);
 
       return texture;
     } catch (error) {

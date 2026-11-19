@@ -7,6 +7,7 @@
 
 import { LumaLabsLoader } from "@loaders/LumaLabsLoader";
 import { PlyMeshLoader } from "@loaders/PlyMeshLoader";
+import { assetUrl } from "@template/assetUrl";
 
 const LOCAL_PLY = {
   "triangle.ply": () => import("./fixtures/triangle.ply?url"),
@@ -32,8 +33,11 @@ function withTimeout(promise, milliseconds, message) {
 }
 
 async function resolvePlyUrl(sourceUrl) {
-  if (/^https?:\/\//.test(sourceUrl) || sourceUrl.startsWith("/")) {
+  if (/^https?:\/\//.test(sourceUrl)) {
     return sourceUrl;
+  }
+  if (sourceUrl.startsWith("/")) {
+    return assetUrl(sourceUrl);
   }
   if (sourceUrl.startsWith("ply:")) {
     const fileName = sourceUrl.slice(4);

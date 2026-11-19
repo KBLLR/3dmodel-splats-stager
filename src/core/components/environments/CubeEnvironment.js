@@ -4,6 +4,7 @@
  */
 
 import * as THREE from "three";
+import { assetUrl } from "@template/assetUrl";
 
 /**
  * @class CubeEnvironment
@@ -60,12 +61,12 @@ export class CubeEnvironment {
 
     try {
       this.envMap = await this.loader.loadAsync([
-        paths.px,
-        paths.nx,
-        paths.py,
-        paths.ny,
-        paths.pz,
-        paths.nz,
+        assetUrl(paths.px),
+        assetUrl(paths.nx),
+        assetUrl(paths.py),
+        assetUrl(paths.ny),
+        assetUrl(paths.pz),
+        assetUrl(paths.nz),
       ]);
 
       this.envMap.intensity = this.debugObject.intensity;

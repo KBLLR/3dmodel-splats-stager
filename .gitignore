@@ -37,6 +37,7 @@ lerna-debug.log*
 *.png
 !public/icons/icon-192x192.png
 !public/icons/icon-512x512.png
+!docs/screenshots/*.png
 *.jpg
 *.jpeg
 *.mp3

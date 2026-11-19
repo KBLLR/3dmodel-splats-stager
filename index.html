@@ -5,33 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="A reusable template for presenting Gaussian splats. Load a splat, choose which metadata fills the UI, and swap layouts, cinematic cameras, and effects."
+      content="A Three.js-based viewer for Gaussian Splatting models with advanced staging capabilities"
     />
-    <meta name="theme-color" content="#101114" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Splat Template" />
+    <meta name="apple-mobile-web-app-title" content="Splats Stager" />
     <meta name="format-detection" content="telephone=no" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Splat Template" />
+    <meta property="og:title" content="3D Model Splats Stager" />
     <meta
       property="og:description"
-      content="Present Gaussian splats with swappable layouts, cinematic cameras, and effects."
+      content="Advanced 3D model visualization with Gaussian Splatting"
     />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,640&family=Outfit:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <title>Splat Template</title>
+    <link rel="manifest" href="%BASE_URL%manifest.json" />
+    <link rel="icon" type="image/x-icon" href="%BASE_URL%favicon.ico" />
+    <title>3D Model Splats Stager</title>
+    <script>
+      try {
+        var saved = JSON.parse(localStorage.getItem("splats-stager.settings.v1") || "{}");
+        var params = new URLSearchParams(location.search);
+        var layout = params.get("layout") || saved.layout;
+        if (layout === "studio" || layout === "editorial" || layout === "catalog") {
+          document.documentElement.dataset.layout = layout;
+        }
+        if (saved.settingsHidden) document.documentElement.dataset.settings = "hidden";
+        if (saved.theme === "light" || params.get("theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+        if (saved.presentation) document.documentElement.dataset.presentation = "on";
+      } catch (error) {
+        /* storage unavailable */
+      }
+    </script>
   </head>
   <body>
     <canvas id="webgl" class="webgl"></canvas>
     <div id="grade" class="grade" aria-hidden="true"></div>
-    <div id="ui-root" class="ui-root" data-composition="studio"></div>
+    <div class="ui-container">
+      <div class="banner-top-left">
+        <div class="rectangle" style="width: 250px; height: 1px; top: 0"></div>
+        <div class="rectangle" style="width: 1px; height: 265px; right: 0"></div>
+        <div class="rectangle" style="width: 250px; height: 1px; bottom: 0"></div>
+        <div class="rectangle" style="width: 1px; height: 265px; left: 0"></div>
+        <div class="rectangle" style="width: 1px; height: 88px; left: 229px"></div>
+        <div class="rectangle" style="width: 250px; height: 1px; top: 87px"></div>
+        <div class="month">Nov</div>
+        <div class="year">2024</div>
+        <div class="intro">
+          This Text will be auto-generated based on the Stage resulting of our
+          generator. AI will come after to assist
+        </div>
+      </div>
+
+      <div id="catalog-rail" class="catalog-rail" aria-label="Splat catalog"></div>
+
+      <div class="banner-bottom-center">
+        <div class="title-banner-bottom">Innovate –</div>
+        <div class="subtitle-banner-bottom">with a human touch.</div>
+        <div class="text-banner-bottom">
+          This Text will be auto-generated based on the Stage resulting of our
+          generator. AI will come after to assist.
+        </div>
+      </div>
+
+      <div class="camera-dock" aria-label="Camera">
+        <button type="button" data-camera-action="reset">Reset view</button>
+        <button type="button" data-camera-action="stop">Stop</button>
+        <button type="button" data-camera-action="autorotate" aria-pressed="false">Auto-rotate</button>
+      </div>
+    </div>
+
+    <div id="viewer-settings" class="tweakpane-container"></div>
+    <button
+      type="button"
+      class="settings-toggle"
+      data-settings-toggle
+      aria-expanded="true"
+      aria-controls="viewer-settings"
+      aria-label="Hide settings"
+      title="Hide settings (H or .)"
+    >
+      <span data-settings-label>Hide</span>
+    </button>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

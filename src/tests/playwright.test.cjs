@@ -21,6 +21,8 @@ const path = require('path');
         return (
           text.includes("PresetManager Tests Complete") &&
           text.includes("Catalog Tests Complete") &&
+          text.includes("Settings Tests Complete") &&
+          text.includes("Camera Tests Complete") &&
           text.includes("Tests Complete")
         );
       },
