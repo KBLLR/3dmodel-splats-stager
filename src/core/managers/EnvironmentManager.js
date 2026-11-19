@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { PMREMGenerator } from 'three';
+import { assetUrl } from '@template/assetUrl';
 
 /**
  * @class EnvironmentManager
@@ -65,21 +66,22 @@ export class EnvironmentManager {
      * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded texture.
      */
     async setEnvironmentMapPath(path, options = {}) {
-        const extension = path.split('.').pop().toLowerCase();
+        const resolved = assetUrl(path);
+        const extension = resolved.split('.').pop().toLowerCase();
         
         try {
             let texture;
             switch(extension) {
                 case 'hdr':
-                    texture = await this.loadHDR(path);
+                    texture = await this.loadHDR(resolved);
                     break;
                 case 'exr':
-                    texture = await this.loadEXR(path);
+                    texture = await this.loadEXR(resolved);
                     break;
                 case 'png':
                 case 'jpg':
                 case 'jpeg':
-                    texture = await this.loadLDR(path);
+                    texture = await this.loadLDR(resolved);
                     break;
                 default:
                     throw new Error(`Unsupported format: ${extension}`);

@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { assetUrl } from '@template/assetUrl';
 
 /**
  * @class EnvironmentManager
@@ -55,12 +56,13 @@ export class EnvironmentManager {
      * @returns {Promise<THREE.Texture>} A promise that resolves with the loaded environment texture.
      */
     async loadHDREnvironment(renderer, scene, path) {
+        const resolved = assetUrl(path);
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         pmremGenerator.compileEquirectangularShader();
 
         return new Promise((resolve, reject) => {
             new RGBELoader()
-                .load(path, 
+                .load(resolved, 
                     (texture) => {
                         const environment = pmremGenerator.fromEquirectangular(texture).texture;
                         scene.environment = environment;

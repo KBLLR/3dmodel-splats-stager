@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader.js";
+import { assetUrl } from "@template/assetUrl";
 
 export class PlyMeshLoader {
   constructor() {
@@ -14,7 +15,7 @@ export class PlyMeshLoader {
   }
 
   async load(path) {
-    const geometry = await this.loader.loadAsync(path);
+    const geometry = await this.loader.loadAsync(assetUrl(path));
     geometry.computeVertexNormals();
     const hasColor = geometry.hasAttribute("color");
     const material = new THREE.MeshStandardMaterial({

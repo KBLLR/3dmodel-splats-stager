@@ -1,7 +1,9 @@
 /**
- * Applies a cinematic camera preset: lens values from the preset, framing from
- * a staging map. Movement presets animate that framing.
+ * Cinematic presets frame the subject. Movement presets animate that frame
+ * until the viewer drags, pans, or zooms — then OrbitControls take over.
+ * Reset view returns to the framing remembered for the current record.
  */
+import * as THREE from "three";
 
 const STAGING = {
   DEFAULT: { position: [0, 1.4, 4.2], target: [0, 0.8, 0] },
@@ -23,20 +25,60 @@ export function focalLengthToFov(focalLength, sensorHeight = 24) {
   return Math.min(100, Math.max(8, fov));
 }
 
-export function createCameraRig({ camera, controls }) {
+export function configureOrbitControls(controls) {
+  controls.enabled = true;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enableRotate = true;
+  controls.enablePan = true;
+  controls.enableZoom = true;
+  controls.screenSpacePanning = true;
+  controls.panSpeed = 0.85;
+  controls.rotateSpeed = 0.75;
+  controls.zoomSpeed = 0.85;
+  controls.minDistance = 0.35;
+  controls.maxDistance = 80;
+  controls.minPolarAngle = 0.08;
+  controls.maxPolarAngle = Math.PI - 0.08;
+  controls.autoRotate = false;
+  controls.autoRotateSpeed = 2;
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN,
+  };
+  controls.touches = {
+    ONE: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_PAN,
+  };
+  return controls;
+}
+
+export function createCameraRig({ camera, controls, domElement, onUserInteract, matchMedia } = {}) {
+  configureOrbitControls(controls);
+  const motion =
+    matchMedia ||
+    (typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : { matches: false });
+
   const state = {
     presetId: "DEFAULT",
     preset: null,
     movement: { movement: false },
-    reduceMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    home: null,
+    animating: false,
+    autoRotate: false,
+    autoRotateSpeed: 2,
+    reduceMotion: Boolean(motion.matches),
   };
 
   function place(time = 0) {
-    const staging = STAGING[state.presetId] ?? STAGING.DEFAULT;
+    const staging = STAGING[state.presetId] || STAGING.DEFAULT;
     const [baseX, baseY, baseZ] = staging.position;
     const target = staging.target;
     const movement = state.movement || {};
-    const animate = movement.movement && !state.reduceMotion;
+    const animate = state.animating && movement.movement && !state.reduceMotion;
 
     let x = baseX;
     let y = baseY;
@@ -44,7 +86,7 @@ export function createCameraRig({ camera, controls }) {
 
     if (animate && movement.path === "circular") {
       const speed = movement.speed ?? 0.2;
-      const radius = movement.radius ?? Math.hypot(baseX, baseZ);
+      const radius = movement.radius ?? (Math.hypot(baseX, baseZ) || 4);
       x = Math.cos(time * speed) * radius;
       z = Math.sin(time * speed) * radius;
       y = movement.height ?? baseY;
@@ -65,38 +107,101 @@ export function createCameraRig({ camera, controls }) {
     camera.position.set(x, y, z);
     controls.target.set(target[0], target[1], target[2]);
     camera.lookAt(target[0], target[1], target[2]);
-    controls.enabled = !animate;
+  }
+
+  function applyLens(preset) {
+    camera.fov = focalLengthToFov(preset?.focalLength);
+    camera.focus = preset?.focusDistance;
+    camera.aperture = Math.min(0.25, 0.45 / (preset?.fstop || 2.8));
+    if (camera.debugObject) {
+      camera.debugObject.fov = camera.fov;
+      camera.debugObject.dof = {
+        focus: camera.focus,
+        aperture: camera.aperture,
+      };
+    }
+    camera.updateProjectionMatrix();
+  }
+
+  function syncAutoRotate() {
+    controls.autoRotate = state.autoRotate && !state.animating && !state.reduceMotion;
+    controls.autoRotateSpeed = state.autoRotateSpeed;
+  }
+
+  function stopForUser() {
+    if (!state.animating) return false;
+    state.animating = false;
+    syncAutoRotate();
+    controls.update();
+    if (onUserInteract) onUserInteract();
+    return true;
+  }
+
+  const element = domElement || controls.domElement;
+  const onPointerIntent = () => {
+    stopForUser();
+  };
+  const blockContextMenu = (event) => event.preventDefault();
+
+  if (element) {
+    element.addEventListener("pointerdown", onPointerIntent);
+    element.addEventListener("wheel", onPointerIntent, { passive: true });
+    element.addEventListener("touchstart", onPointerIntent, { passive: true });
+    element.addEventListener("contextmenu", blockContextMenu);
   }
 
   return {
     applyPreset(presetId, preset) {
-      state.presetId = presetId;
-      state.preset = preset;
-      camera.fov = focalLengthToFov(preset.focalLength);
-      camera.focus = preset.focusDistance;
-      camera.aperture = Math.min(0.25, 0.45 / (preset.fstop || 2.8));
-      if (camera.debugObject) {
-        camera.debugObject.fov = camera.fov;
-        camera.debugObject.dof = {
-          focus: camera.focus,
-          aperture: camera.aperture,
-        };
-      }
-      camera.updateProjectionMatrix();
+      state.presetId = presetId || "DEFAULT";
+      state.preset = preset || null;
+      applyLens(state.preset);
       place(0);
       controls.update();
     },
     applyMovement(movement) {
       state.movement = movement || { movement: false };
+      state.animating = Boolean(state.movement.movement) && !state.reduceMotion;
+      syncAutoRotate();
       place(0);
       controls.update();
     },
+    rememberHome(presetId, preset, movement) {
+      state.home = {
+        presetId,
+        preset,
+        movement: movement || { movement: false },
+      };
+    },
+    resetView() {
+      if (!state.home) return false;
+      state.animating = false;
+      this.applyPreset(state.home.presetId, state.home.preset);
+      this.applyMovement(state.home.movement);
+      return true;
+    },
+    stopForUser,
+    setAutoRotate(enabled, speed) {
+      state.autoRotate = Boolean(enabled);
+      if (Number.isFinite(speed)) state.autoRotateSpeed = speed;
+      syncAutoRotate();
+    },
+    isAnimating() {
+      return state.animating;
+    },
     update(time) {
-      if (state.movement?.movement && !state.reduceMotion) {
+      if (state.animating && state.movement?.movement && !state.reduceMotion) {
         place(time);
-      } else if (controls.enabled) {
-        controls.update();
+        return;
       }
+      syncAutoRotate();
+      controls.update();
+    },
+    dispose() {
+      if (!element) return;
+      element.removeEventListener("pointerdown", onPointerIntent);
+      element.removeEventListener("wheel", onPointerIntent);
+      element.removeEventListener("touchstart", onPointerIntent);
+      element.removeEventListener("contextmenu", blockContextMenu);
     },
   };
 }

@@ -1,8 +1,10 @@
+import { assetUrl } from "@template/assetUrl";
+
 export const EnvPresets = {
   // Sunset/Dusk Environments
   pointeSunset03: {
     name: "Pointe Sunset Warm",
-    path: "/environmentMaps/hdr/T_HDR360_Pointe_Sunset_03.hdr",
+    path: assetUrl("/environmentMaps/hdr/T_HDR360_Pointe_Sunset_03.hdr"),
     settings: {
       intensity: 1.2,
       backgroundBlur: 0,
@@ -15,7 +17,7 @@ export const EnvPresets = {
   },
   pointeSunset08: {
     name: "Pointe Sunset Cool",
-    path: "/environmentMaps/hdr/T_HDR360_Pointe_Sunset_08.hdr",
+    path: assetUrl("/environmentMaps/hdr/T_HDR360_Pointe_Sunset_08.hdr"),
     settings: {
       intensity: 1.1,
       backgroundBlur: 0,
@@ -30,7 +32,7 @@ export const EnvPresets = {
   // Night Environments
   sataraNight: {
     name: "Satara Night",
-    path: "/environmentMaps/hdr/satara_night_no_lamps_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/satara_night_no_lamps_2k.hdr"),
     settings: {
       intensity: 0.8,
       backgroundBlur: 0.1,
@@ -43,7 +45,7 @@ export const EnvPresets = {
   },
   blaubeurenNight: {
     name: "Blaubeuren Night",
-    path: "/environmentMaps/hdr/blaubeuren_night_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/blaubeuren_night_2k.hdr"),
     settings: {
       intensity: 0.7,
       backgroundBlur: 0,
@@ -56,7 +58,7 @@ export const EnvPresets = {
   },
   nightBridge: {
     name: "Night Bridge",
-    path: "/environmentMaps/hdr/night_bridge_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/night_bridge_2k.hdr"),
     settings: {
       intensity: 0.9,
       backgroundBlur: 0.05,
@@ -71,7 +73,7 @@ export const EnvPresets = {
   // Pure Sky Environments
   autumnField: {
     name: "Autumn Field Sky",
-    path: "/environmentMaps/hdr/autumn_field_puresky_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/autumn_field_puresky_2k.hdr"),
     settings: {
       intensity: 1.3,
       backgroundBlur: 0,
@@ -84,7 +86,7 @@ export const EnvPresets = {
   },
   kloppenheim: {
     name: "Kloppenheim Sky",
-    path: "/environmentMaps/hdr/kloppenheim_02_puresky_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/kloppenheim_02_puresky_2k.hdr"),
     settings: {
       intensity: 1.2,
       backgroundBlur: 0,
@@ -99,7 +101,7 @@ export const EnvPresets = {
   // Urban/City Environments
   shanghaiBund: {
     name: "Shanghai Bund",
-    path: "/environmentMaps/hdr/shanghai_bund_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/shanghai_bund_2k.hdr"),
     settings: {
       intensity: 1.1,
       backgroundBlur: 0.1,
@@ -112,7 +114,7 @@ export const EnvPresets = {
   },
   neoTokyo: {
     name: "Neo Tokyo",
-    path: "/environmentMaps/hdr/neo_tokyo.hdr",
+    path: assetUrl("/environmentMaps/hdr/neo_tokyo.hdr"),
     settings: {
       intensity: 1.2,
       backgroundBlur: 0.15,
@@ -127,7 +129,7 @@ export const EnvPresets = {
   // Studio/Indoor Environments
   softbox: {
     name: "Softbox Studio",
-    path: "/environmentMaps/hdr/softbox.hdr",
+    path: assetUrl("/environmentMaps/hdr/softbox.hdr"),
     settings: {
       intensity: 1.0,
       backgroundBlur: 0,
@@ -140,7 +142,7 @@ export const EnvPresets = {
   },
   creepyBathroom: {
     name: "Creepy Bathroom",
-    path: "/environmentMaps/hdr/creepy_bathroom_2k.hdr",
+    path: assetUrl("/environmentMaps/hdr/creepy_bathroom_2k.hdr"),
     settings: {
       intensity: 0.8,
       backgroundBlur: 0.2,
@@ -155,7 +157,7 @@ export const EnvPresets = {
   // Stylized
   grungePop: {
     name: "Grunge Pop",
-    path: "/environmentMaps/hdr/grunge_pop.hdr",
+    path: assetUrl("/environmentMaps/hdr/grunge_pop.hdr"),
     settings: {
       intensity: 1.4,
       backgroundBlur: 0,
@@ -168,7 +170,7 @@ export const EnvPresets = {
   },
   comic: {
     name: "Comic Style",
-    path: "/environmentMaps/hdr/comic.hdr",
+    path: assetUrl("/environmentMaps/hdr/comic.hdr"),
     settings: {
       intensity: 1.3,
       backgroundBlur: 0,

@@ -1,22 +1,57 @@
-# Splat Template
+# 3D Studio Labs
 
-A reusable viewer for **presenting** Gaussian splats. Load a splat, choose which metadata fields fill the interface, and swap the layout, cinematic camera, and effect. This project does not generate splats.
+**Stage a Gaussian splat in the original Studio Labs frame.**
 
-The page is a dark stage with three layouts (Studio, Editorial, Catalog), a splat library, camera and movement controls, and a small set of presentation grades. The default records are Luma captures. One extra record loads a tiny triangle mesh so the PLY path can be tried without a download.
+Open the viewer, orbit the capture, and switch how the title, date plate, and controls sit — without reloading the splat.
 
-## What the viewer does
+**Live:** [kbllr.github.io/3dmodel-splats-stager](https://kbllr.github.io/3dmodel-splats-stager/)
 
-- Loads a **Luma capture** through `LumaLabsLoader` (`@lumaai/luma-web`), or a **mesh PLY** through Three.js `PLYLoader`.
-- Fills the open layout from the splat record. The record's `visibleFields` list is the only metadata drawn in that block. The library and the Editorial splat menu still show titles so you can change the selection.
-- Swaps UI compositions without reloading the source: Studio (side panel), Editorial (large type), Catalog (card rail).
-- Applies a cinematic camera preset (focal length becomes field of view, plus focus and aperture) and a movement preset (static, handheld, crane, dolly, orbit).
-- Applies an effect: renderer exposure, a fog preset color at a light density, and a vignette/grain overlay. Switching an effect replaces the stage color.
+The hosted page stays on unbuilt source until GitHub Pages is set to **GitHub Actions** (see [Getting started](#getting-started)). After that switch, the link above is this app.
 
-Orbit the stage when movement is Static. The other movements take the camera until you return to Static. If the operating system asks for reduced motion, movement presets hold a still frame.
+![Studio layout: date plate, display type, Tweakpane, and a rendered mesh](docs/screenshots/restored-studio.png)
 
-## JSON per splat
+## What you can do
 
-Each splat is one file in [`src/splats/records/`](src/splats/records/). [`src/splats/catalog.js`](src/splats/catalog.js) loads every `*.json` file and publishes them as `MODEL_PRESETS`.
+- **Studio Labs design.** Roboto and Antonio, the November plate, the big display type, and Tweakpane. Studio is the default and uses that original frame.
+- **Three layouts.** Studio, Editorial, and Catalog only move those same pieces. Changing layout does not reload the splat.
+- **A camera you can actually use.** Drag to orbit, right-drag or two fingers to pan, wheel or pinch to zoom, with damping and distance limits. Reset view returns to the record's camera. Cinematic movement presets animate until you grab the view. Auto-rotate has a speed control.
+- **Settings you can always hide.** A glass button stays on screen (blur, translucent fill, hairline, soft shadow; solid fill where `backdrop-filter` is missing). `H` or `.` does the same. The choice is stored in `localStorage` and works in every layout, including mobile.
+- **Splash copy you can edit.** Title, subtitle, body text, and show/hide. Defaults come from the splat's JSON record. A shared link can override them with `?title=`, `?subtitle=`, `?text=` (or `?intro=`), and `?splash=0`.
+- **One JSON file per splat.** Luma captures load through `LumaLabsLoader`. A mesh PLY loads through Three.js `PLYLoader`. `sample-mesh` is a tiny bundled triangle so the PLY path can be tried offline.
+- **Grades, not a new look.** Clean, Soft, Cinematic, and Night set exposure, a fog preset, and a light vignette/grain overlay.
+
+This app presents splats. It does not generate them.
+
+## Getting started
+
+Node.js 20.19+ or 22.12+ (the Pages workflow uses Node 24). npm 9+. This repo uses npm and `package-lock.json`.
+
+```bash
+git clone https://github.com/KBLLR/3dmodel-splats-stager.git
+cd 3dmodel-splats-stager
+npm ci
+npm run dev
+```
+
+Vite prints a local URL, usually `http://localhost:5173/`.
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server. Base path is `/`. |
+| `npm run build` | Production build into `dist/`, with base `/3dmodel-splats-stager/`. |
+| `npm run preview` | Serves that build under `/3dmodel-splats-stager/`. |
+| `npm run lint` | ESLint on `.js` files. |
+| `npm run test` | Starts Vite. Open `/src/tests/` for the browser checks. |
+
+### Deploy to GitHub Pages
+
+Pushes to `main` run [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): `npm ci`, `npm run build`, upload `dist/`.
+
+In the GitHub repo, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**. The workflow does not change that setting. Leave it on "Deploy from a branch" and the site keeps serving raw source, so the splat and the built assets 404.
+
+## Add a splat
+
+Drop a JSON file in [`src/splats/records/`](src/splats/records/). [`src/splats/catalog.js`](src/splats/catalog.js) loads every `*.json` file.
 
 ```json
 {
@@ -41,78 +76,59 @@ Each splat is one file in [`src/splats/records/`](src/splats/records/). [`src/sp
 | Field | Role |
 | --- | --- |
 | `id` | Preset name. `PresetManager.loadPreset("models", id)` returns the record. |
-| `title`, `description`, `captureDate`, `tags`, `location` | Metadata the layout may show. |
+| `title`, `subtitle`, `description` | Splash copy. `subtitle` is optional; otherwise the line is "with a human touch." |
+| `captureDate`, `tags`, `location` | Extra metadata when Metadata is on and the field is listed in `visibleFields`. |
 | `source.kind` | `luma` or `ply`. |
-| `source.url` | Luma capture URL, an `http(s)` PLY URL, a site-root path, or `ply:<filename>` for a file already in `src/assets/ply`. |
-| `defaultCamera` | Key in `CAMERA_PRESETS`. |
-| `defaultMovement` | Key in `CAMERA_MOVEMENT_PRESETS`. |
+| `source.url` | Luma capture URL, an `http(s)` PLY URL, a site-root path, or `ply:<filename>` for a bundled reference. |
+| `defaultCamera` | Key in `CAMERA_PRESETS`. Reset view returns here. |
+| `defaultMovement` | `STATIC`, `HANDHELD`, `CRANE`, `DOLLY`, or `ORBIT`. |
 | `defaultEffect` | `clean`, `soft`, `cinematic`, or `night`. |
 | `visibleFields` | Ordered subset of `title`, `description`, `captureDate`, `tags`, `location`, `source`. |
 | `demo` | When true, the viewer prefers this record on first load. |
 
-Empty `captureDate` and `location` render as "Not recorded". The files do not invent dates or coordinates.
+Empty `captureDate` and `location` render as "Not recorded". Do not invent dates or coordinates. Do not commit secrets. The viewer does not read API tokens.
 
-`src/presets/index.js` already had an empty `PRESET_REGISTRY.MODELS` slot (`"models"`). `PresetManager` now loads that slot from the catalog. Camera, camera-movement, and fog presets are unchanged and still load the same way.
+`?splat=`, `?camera=`, `?movement=`, `?effect=`, `?layout=`, and `?theme=light` also apply on load. `?layout=` and the Layout control only move the shell.
 
-### One list instead of two
+## Memory Blocks and the warehouse
 
-`src/config/lumaSplats.js` (`LUMA_SPLATS`) and `src/presets/lumaLabsModels.js` (`LUMA_MODELS`) used to repeat capture URLs. Both files now re-export maps built from the JSON records.
+The owner's Core-X house, **Memory Blocks**, is where these records are meant to live (`data/local-splats.json` and `data/scenes.json`). This app still reads the JSON files in the repo. It does not fetch Memory Blocks yet.
 
-- `LUMA_SPLATS` is every Luma record that belonged to the old splat list.
-- `LUMA_MODELS` is the smaller set that belonged to the old model list.
-- **TREE is not a record.** In `LUMA_SPLATS` it used Autovan's URL. In `LUMA_MODELS` the same id was Autovan's URL with a trailing `l` (`…0d75l`). Autovan keeps the shared capture URL.
+PLY files in `src/assets/ply` are local references. The canonical copies belong in the CoreX-Warehouse drive at `datasets/gaussian-splats/ply`. Point `source.url` at that object when the feed exists. Do not delete the local files as part of that switch.
 
-Two records are marked `demo: true` and use those existing Luma URLs: Autovan and Centro Cultural.
+## Make your own viewer
 
-## Where the records live
+Keep this repository as the viewer. The reusable pieces are the JSON record, the catalog, and the settings object (`record`, then a saved edit, then the URL). Layouts are `data-layout` values on the original shell, not a second design system.
 
-The viewer's current source is the JSON files in this repository.
+To start a new viewer: copy the repo, replace the files in `src/splats/records/`, and edit splash defaults in the record. On GitHub, **Settings → General → Template repository** lets other projects use **Use this template**. This repo does not flip that switch itself.
 
-The owner's Core-X house, **Memory Blocks**, is the place those records are meant to live. In that house the splat records are `data/local-splats.json` and `data/scenes.json`. This app does not fetch Memory Blocks yet. See Next steps.
+## Layouts
 
-## Template map
-
-| Concern | Where it lives |
+| Layout | What moves |
 | --- | --- |
-| Splat source / loading | [`src/splats/SplatSource.js`](src/splats/SplatSource.js), [`LumaLabsLoader`](src/core/components/loaders/LumaLabsLoader.js), [`PlyMeshLoader`](src/core/components/loaders/PlyMeshLoader.js). `LoaderManager` registers both loaders (`splat` and `ply`). |
-| Per-splat metadata | [`src/splats/records/*.json`](src/splats/records/) and [`src/splats/catalog.js`](src/splats/catalog.js). [`src/splats/fields.js`](src/splats/fields.js) formats `visibleFields`. |
-| UI compositions | [`src/template/compositions/`](src/template/compositions/) (`studio`, `editorial`, `catalog`). [`ViewerApp`](src/template/ViewerApp.js) owns the stage. |
-| Cinematic cameras | [`src/presets/cameraPresets.js`](src/presets/cameraPresets.js) and [`src/template/cameraRig.js`](src/template/cameraRig.js). The rig frames each preset; lens numbers come from the preset. |
-| Effects | [`src/effects/effectPresets.js`](src/effects/effectPresets.js) and [`src/effects/applyEffect.js`](src/effects/applyEffect.js). Fog colors come from [`src/presets/fogPresets.js`](src/presets/fogPresets.js). |
+| Studio | Date plate top left, display type along the bottom, Tweakpane top right. |
+| Editorial | Display type on the left, date plate underneath, camera buttons top left. |
+| Catalog | A rail of plates lists every splat. The selected record keeps the bottom title. |
 
-Entry: [`index.html`](index.html) loads [`src/main.js`](src/main.js), which starts `ViewerApp`. The renderer is `LumaRenderer` (ACES filmic, sRGB). The camera is `CinematicCamera`.
+![Editorial layout](docs/screenshots/layout-editorial.png)
 
-A Luma load that fails or times out leaves the metadata on screen and a short status line. `sample-mesh` is not a Gaussian splat. It loads [`src/splats/fixtures/triangle.ply`](src/splats/fixtures/triangle.ply), a small ASCII triangle, through `ply:<filename>`. Any other mesh PLY can use an `http(s)` URL or a site-root path on `source.url`. The binary meshes already in `src/assets/ply` stay where they are. They are trimesh exports, they are not referenced by the catalog, and they are not the warehouse copies.
+![Catalog layout](docs/screenshots/layout-catalog.png)
 
-Vignette and grain are CSS overlays. Fog and exposure hit the Three.js scene and renderer. `CinematicRenderer` still stores vignette and grain flags on `debugObject`; there is no bloom or film pass in this template.
+## Settings
 
-## Getting started
+The glass **Hide** / **Show** button sits at the bottom right. It stays up when the pane is closed. `aria-expanded` follows the pane. `H` and `.` toggle it unless focus is in a field. The last state is `localStorage` key `splats-stager.settings.v1`.
 
-Node.js 18+ and npm 9+. This repo uses npm and `package-lock.json`.
-
-```bash
-git clone https://github.com/KBLLR/3dmodel-splats-stager.git
-cd 3dmodel-splats-stager
-npm ci
-npm run dev
-```
-
-Vite prints the local URL (port 5173 unless that port is taken).
-
-| Script | What it does |
+| Control | Where |
 | --- | --- |
-| `npm run dev` | Dev server with hot reload. |
-| `npm run build` | Production build into `dist/`. |
-| `npm run preview` | Serve the production build. |
-| `npm run lint` | ESLint on `.js` files. |
-| `npm run format` | Prettier write. |
-| `npm run test` | Starts Vite. Open `/src/tests/` for the browser checks (scene config, presets, and the splat catalog). |
+| Fog on/off, preset, description | Fog Controls (the original folder) |
+| Movement preset, shake, stabilization | Camera Movement. Playback runs until a drag, pan, or zoom. |
+| Camera preset, auto-rotate, speed, reset, stop | Camera |
+| Splat, layout, effect, background | Stage |
+| Show splash, title, subtitle, text, use record text | Splash |
+| Metadata, light/dark theme, hide all UI | View |
 
-To add a splat, drop a JSON file in `src/splats/records/` using the fields above. Use a Luma capture URL you are allowed to present, or a PLY URL. Do not commit secrets. The viewer does not read API tokens.
+Hide all UI clears the plates and the fps counter. The glass button stays so settings can come back. Editorial and Catalog also show **Reset view**, **Stop**, and **Auto-rotate** on the frame; they call the same camera rig as the pane.
 
-## Next steps
+![Settings open](docs/screenshots/settings-open.png)
 
-1. **Wire Memory Blocks as the metadata source.** Read the Core-X Memory Blocks house (`data/local-splats.json` and `data/scenes.json`) instead of only the JSON files under `src/splats/records/`. Keep the same record shape so compositions, cameras, and effects stay swappable.
-2. **Treat the CoreX-Warehouse drive as the only source of truth for `.ply` files.** The canonical path is `datasets/gaussian-splats/ply`. Files in `src/assets/ply`, and any cloud copy, are references. Point `source.url` at the warehouse object. Do not move or delete the local PLY files as part of that switch.
-3. **Curate the demo set.** Autovan and Centro Cultural are marked `demo` so the template has two working Luma entries. Replace or trim them once Memory Blocks and the warehouse feed are connected.
-4. **Deploy to GitHub Pages.** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) already runs `npm ci`, `npm run build`, and uploads `dist/` on pushes to `main`. Publish from that workflow after the metadata source and warehouse URLs are in place, so the hosted viewer is not left pointing at local references.
+![Settings hidden](docs/screenshots/settings-hidden.png)

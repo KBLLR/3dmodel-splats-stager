@@ -4,7 +4,9 @@ import { fileURLToPath } from "node:url";
 
 const resolveSrc = (path) => fileURLToPath(new URL(`./src/${path}`, import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ command, mode }) => ({
+  // Dev stays at /. Production builds and `vite preview` use the Pages subpath.
+  base: command === "build" || mode === "production" ? "/3dmodel-splats-stager/" : "/",
   plugins: [glsl({ query: '?url', import: 'default' })],
   optimizeDeps: {
     include: ["tweakpane"],
@@ -61,4 +63,4 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: true,
   },
-});
+}));

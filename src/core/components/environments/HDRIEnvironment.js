@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { assetUrl } from "@template/assetUrl";
 
 /**
  * @class HDRIEnvironment
@@ -48,7 +49,7 @@ export class HDRIEnvironment {
     pmremGenerator.compileEquirectangularShader();
 
     try {
-      const texture = await this.loader.loadAsync(this.debugObject.path);
+      const texture = await this.loader.loadAsync(assetUrl(this.debugObject.path));
       texture.mapping = THREE.EquirectangularReflectionMapping;
 
       this.envMap = pmremGenerator.fromEquirectangular(texture).texture;
